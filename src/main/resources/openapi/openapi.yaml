@@ -9,7 +9,7 @@ paths:
     post:
       tags:
         - vehicle
-      summary: Get authorized vehicles
+      summary: Get vehicles
       responses:
         '200':
           description: Success
@@ -111,14 +111,14 @@ components:
         - userRole
       properties:
         userId:
-          type: number
+          type: integer
           format: int64
         name:
           type: string
         surname:
           type: string
         companyId:
-          type: number
+          type: integer
           format: int64
         companyName:
           type: string
@@ -185,11 +185,4 @@ components:
         modelYear:
           type: integer
 
-  securitySchemes:
-    SecurityHeader:
-      type: apiKey
-      in: header
-      name: X-User
 
-security:
-  - SecurityHeader: []

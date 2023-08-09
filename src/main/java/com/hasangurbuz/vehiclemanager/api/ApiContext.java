@@ -3,6 +3,7 @@ package com.hasangurbuz.vehiclemanager.api;
 import com.hasangurbuz.vehiclemanager.domain.UserRole;
 import lombok.Getter;
 import lombok.Setter;
+import org.openapitools.model.UserRoleDTO;
 
 @Getter
 @Setter
@@ -12,7 +13,7 @@ public class ApiContext {
     private String surname;
     private Long companyId;
     private String companyName;
-    private UserRole userRole;
+    private UserRoleDTO userRole;
 
     private static final ThreadLocal<ApiContext> threadLocal = new InheritableThreadLocal<>();
 
