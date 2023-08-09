@@ -1,10 +1,17 @@
 package com.hasangurbuz.vehiclemanager.service;
 
 import com.hasangurbuz.vehiclemanager.domain.Vehicle;
-import com.hasangurbuz.vehiclemanager.dto.VehicleDto;
+
+import java.util.List;
 
 public interface VehicleService {
-    Vehicle addVehicle(VehicleDto vehicleRequest);
+    Vehicle addVehicle(Vehicle vehicle);
 
-    void deleteVehicle(Long vehicleId);
+    Vehicle updateVehicle(Long id, Vehicle vehicle);
+
+    List<Vehicle> getVehicles();
+
+    Vehicle getVehicleById(Long id);
+
+    void deleteVehicle(Long id);
 }

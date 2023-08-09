@@ -1,0 +1,162 @@
+openapi: 3.0.3
+info:
+  title: Filo
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+paths:
+  /vehicle:
+    post:
+      tags:
+        - vehicle
+      summary: Get authorized vehicles
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VehicleDto'
+
+  /vehicle/{id}:
+    post:
+      tags:
+        - vehicle
+      summary: Get vehicle by id
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleDto'
+
+  /vehicle/add:
+    post:
+      tags:
+        - vehicle
+      summary: Add vehicle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleDto'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleDto'
+
+  /vehicle/update/{id}:
+    post:
+      tags:
+        - vehicle
+      summary: Update vehicle
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleDto'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleDto'
+
+  /vehicle/delete/{id}:
+    post:
+      tags:
+        - vehicle
+      summary: Delete vehicle
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Success
+
+components:
+  schemas:
+    UserContext:
+      type: object
+      required:
+        - userId
+        - companyId
+        - userRole
+      properties:
+        userId:
+          type: number
+          format: int64
+        name:
+          type: string
+        surname:
+          type: string
+        companyId:
+          type: number
+          format: int64
+        companyName:
+          type: string
+        userRole:
+          $ref: '#/components/schemas/UserRole'
+
+    UserRole:
+      type: string
+      enum:
+        - Admin
+        - CompanyAdmin
+        - Standard
+        -
+    VehicleDto:
+      type: object
+      required:
+        - numberPlate
+        - brand
+        - model
+        - modelYear
+      properties:
+        id:
+          type: string
+        numberPlate:
+          type: string
+        chassisNumber:
+          type: string
+        tag:
+          type: string
+        brand:
+          type: string
+        model:
+          type: string
+        modelYear:
+          type: integer
+
+  securitySchemes:
+    UserContext:
+      type: apiKey
+      in: header
+      name: X-User
+
+security:
+  - UserContext: []
