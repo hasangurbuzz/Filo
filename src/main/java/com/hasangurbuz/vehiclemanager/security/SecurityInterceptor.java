@@ -24,8 +24,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-
-
         XUserDTO user = this.authenticatedUser(request);
 
         if (user == null) {
@@ -35,6 +33,12 @@ public class SecurityInterceptor implements HandlerInterceptor {
             response.setContentType(ContentType.APPLICATION_JSON.withCharset(StandardCharsets.UTF_8).toString());
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setCharacterEncoding("UTF-8");
+
+            try {
+                response.getWriter().println(objectMapper.writeValueAsString(error));
+            } catch (Exception e) {
+                //log.error("Error on response.write", e);
+            }
             return false;
         }
 
