@@ -12,7 +12,7 @@ public class ApiException extends RuntimeException {
     public static ApiException accessDenied() {
         ApiException ex = new ApiException();
         ex.setCode(ApiExceptionCode.ACCESS_DENIED);
-        ex.setMessage("You have not access to create vehicle");
+        ex.setMessage("You have not access");
         return ex;
     }
 }
