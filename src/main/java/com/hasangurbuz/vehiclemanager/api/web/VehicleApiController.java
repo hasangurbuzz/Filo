@@ -44,10 +44,7 @@ public class VehicleApiController implements VehicleApi {
             return ResponseEntity.ok(dto);
         }
 
-        ApiException ex = new ApiException();
-        ex.setCode(ApiExceptionCode.ACCESS_DENIED);
-        ex.setMessage("You have not access to create vehicle");
-        throw ex;
+        throw ApiException.accessDenied();
     }
 
     @Override
