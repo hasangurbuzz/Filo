@@ -10,6 +10,8 @@ paths:
       tags:
         - vehicle
       summary: Get vehicles
+      parameters:
+        - $ref: "#/components/parameters/XUser"
       responses:
         '200':
           description: Success
@@ -26,6 +28,7 @@ paths:
         - vehicle
       summary: Get vehicle by id
       parameters:
+        - $ref: "#/components/parameters/XUser"
         - in: path
           name: id
           schema:
@@ -39,17 +42,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/Vehicle'
 
-  /vehicle/add:
+  /vehicle/create:
     post:
       tags:
         - vehicle
       summary: Add vehicle
+      operationId: vehicle_create
+      parameters:
+        - $ref: "#/components/parameters/XUser"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Vehicle'
+              $ref: '#/components/schemas/VehicleCreateRequest'
       responses:
         '200':
           description: Success
@@ -64,6 +70,7 @@ paths:
         - vehicle
       summary: Update vehicle
       parameters:
+        - $ref: "#/components/parameters/XUser"
         - in: path
           name: id
           schema:
@@ -90,6 +97,12 @@ paths:
       summary: Delete vehicle
       parameters:
         - $ref: "#/components/parameters/XUser"
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+
       responses:
         '200':
           description: Success
@@ -128,7 +141,6 @@ components:
     UserRole:
       type: string
       enum:
-        - Admin
         - CompanyAdmin
         - Standard
         -
@@ -160,6 +172,27 @@ components:
           type: string
         message:
           type: string
+
+    VehicleCreateRequest:
+      type: object
+      required:
+        - numberPlate
+        - brand
+        - model
+        - modelYear
+      properties:
+        numberPlate:
+          type: string
+        chassisNumber:
+          type: string
+        tag:
+          type: string
+        brand:
+          type: string
+        model:
+          type: string
+        modelYear:
+          type: integer
 
 
     Vehicle:

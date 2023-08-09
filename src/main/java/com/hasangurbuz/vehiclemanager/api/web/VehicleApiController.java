@@ -5,11 +5,13 @@ import com.hasangurbuz.vehiclemanager.domain.Vehicle;
 import com.hasangurbuz.vehiclemanager.api.mapper.VehicleMapper;
 import com.hasangurbuz.vehiclemanager.service.VehicleService;
 import org.openapitools.api.VehicleApi;
+import org.openapitools.model.VehicleCreateRequestDTO;
 import org.openapitools.model.VehicleDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @RestController
@@ -20,6 +22,22 @@ public class VehicleApiController implements VehicleApi {
 
     @Autowired
     private VehicleMapper vehicleMapper;
+
+    @Override
+    @Transactional
+    public ResponseEntity<VehicleDTO> create(VehicleCreateRequestDTO vehicleCreateRequestDTO) {
+        Vehicle vehicle = new Vehicle();
+        vehicle.setBrand(vehicleCreateRequestDTO.getBrand());
+        vehicle.setTag(vehicleCreateRequestDTO.getTag());
+        vehicle.setModel(vehicleCreateRequestDTO.getModel());
+        vehicle.setModelYear(vehicleCreateRequestDTO.getModelYear());
+        vehicle.setChassisNumber(vehicleCreateRequestDTO.getChassisNumber());
+        vehicle.setNumberPlate(vehicleCreateRequestDTO.getNumberPlate());
+
+        vehicle = vehicleService.create(vehicle);
+        VehicleDTO dto = vehicleMapper.toDto(vehicle);
+        return ResponseEntity.ok(dto);
+    }
 
     @Override
     public ResponseEntity<VehicleDTO> vehicleIdPost(String id) {
@@ -34,18 +52,7 @@ public class VehicleApiController implements VehicleApi {
         return ResponseEntity.ok(vehicleDtos);
     }
 
-    @Override
-    public ResponseEntity<VehicleDTO> vehicleAddPost(VehicleDTO vehicleDto) {
-        Vehicle vehicle = vehicleMapper.toEntity(vehicleDto);
-        vehicle = vehicleService.addVehicle(vehicle);
-        vehicleDto = vehicleMapper.toDto(vehicle);
-        return ResponseEntity.ok(vehicleDto);
-    }
 
-    @Override
-    public ResponseEntity<Void> vehicleDeleteIdPost() {
-        return VehicleApi.super.vehicleDeleteIdPost();
-    }
 
     @Override
     public ResponseEntity<VehicleDTO> vehicleUpdateIdPost(String id, VehicleDTO vehicleDto) {

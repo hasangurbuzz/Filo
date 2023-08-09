@@ -16,10 +16,11 @@ public class VehicleServiceImpl implements VehicleService {
     private VehicleRepository vehicleRepository;
 
     @Override
-    public Vehicle addVehicle(Vehicle vehicle) {
+    public Vehicle create(Vehicle vehicle) {
         vehicle.setCompanyId(ApiContext.get().getCompanyId());
         vehicle.setIsDeleted(false);
-        return vehicleRepository.save(vehicle);
+        vehicle = vehicleRepository.save(vehicle);
+        return vehicle;
     }
 
     @Override
