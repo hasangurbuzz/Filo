@@ -28,22 +28,25 @@ public class VehicleApiController implements VehicleApi {
     @Override
     @Transactional
     public ResponseEntity<VehicleDTO> create(VehicleCreateRequestDTO vehicleCreateRequestDTO) {
-        if (ApiContext.get().getUserRole() != UserRoleDTO.COMPANYADMIN) {
-            Vehicle vehicle = new Vehicle();
-            vehicle.setBrand(vehicleCreateRequestDTO.getBrand());
-            vehicle.setTag(vehicleCreateRequestDTO.getTag());
-            vehicle.setModel(vehicleCreateRequestDTO.getModel());
-            vehicle.setModelYear(vehicleCreateRequestDTO.getModelYear());
-            vehicle.setChassisNumber(vehicleCreateRequestDTO.getChassisNumber());
-            vehicle.setNumberPlate(vehicleCreateRequestDTO.getNumberPlate());
-            vehicle.setCompanyId(ApiContext.get().getCompanyId());
 
-            vehicle = vehicleService.create(vehicle);
-            VehicleDTO dto = vehicleMapper.toDto(vehicle);
-            return ResponseEntity.ok(dto);
+        if (ApiContext.get().getUserRole() != UserRoleDTO.COMPANYADMIN) {
+            throw ApiException.accessDenied();
         }
 
-        throw ApiException.accessDenied();
+        Vehicle vehicle = new Vehicle();
+        vehicle.setBrand(vehicleCreateRequestDTO.getBrand());
+        vehicle.setTag(vehicleCreateRequestDTO.getTag());
+        vehicle.setModel(vehicleCreateRequestDTO.getModel());
+        vehicle.setModelYear(vehicleCreateRequestDTO.getModelYear());
+        vehicle.setChassisNumber(vehicleCreateRequestDTO.getChassisNumber());
+        vehicle.setNumberPlate(vehicleCreateRequestDTO.getNumberPlate());
+        vehicle.setCompanyId(ApiContext.get().getCompanyId());
+
+        vehicle = vehicleService.create(vehicle);
+        VehicleDTO dto = vehicleMapper.toDto(vehicle);
+        return ResponseEntity.ok(dto);
+
+
     }
 
     @Override
