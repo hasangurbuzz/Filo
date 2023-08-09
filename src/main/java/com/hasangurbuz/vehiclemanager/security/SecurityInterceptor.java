@@ -2,6 +2,7 @@ package com.hasangurbuz.vehiclemanager.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hasangurbuz.vehiclemanager.api.ApiContext;
+import com.hasangurbuz.vehiclemanager.api.ApiExceptionCode;
 import org.apache.http.entity.ContentType;
 import org.openapitools.model.ErrorDTO;
 import org.openapitools.model.XUserDTO;
@@ -27,7 +28,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         if (user == null) {
             ErrorDTO error = new ErrorDTO();
-            error.setCode("E0101");
+            error.setCode(ApiExceptionCode.AUTH_ERROR);
             error.setMessage("Auth error");
             response.setContentType(ContentType.APPLICATION_JSON.withCharset(StandardCharsets.UTF_8).toString());
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
