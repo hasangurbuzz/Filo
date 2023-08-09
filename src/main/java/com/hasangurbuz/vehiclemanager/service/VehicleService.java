@@ -14,4 +14,8 @@ public interface VehicleService {
     Vehicle getVehicleById(Long id);
 
     void deleteVehicle(Long id);
+
+    boolean existsPlateNumber(Long companyId, String plateNumber);
+
+    boolean existsChassisNumber(Long companyId, String chassisNumber);
 }

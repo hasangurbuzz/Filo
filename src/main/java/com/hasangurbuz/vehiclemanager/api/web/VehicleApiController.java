@@ -35,16 +35,22 @@ public class VehicleApiController implements VehicleApi {
         }
 
         if (StringUtils.isBlank(vehicleCreateRequestDTO.getBrand())) {
-            throw ApiException.invalidInput("Brand is required");
+            throw ApiException.invalidInput("Brand required");
         }
         if (StringUtils.isBlank(vehicleCreateRequestDTO.getNumberPlate())) {
-            throw ApiException.invalidInput("Number plate is required");
+            throw ApiException.invalidInput("Number plate required");
         }
         if (StringUtils.isBlank(vehicleCreateRequestDTO.getModel())) {
-            throw ApiException.invalidInput("Model is required");
+            throw ApiException.invalidInput("Model required");
         }
         if (vehicleCreateRequestDTO.getModelYear() == null) {
-            throw ApiException.invalidInput("Model year is required");
+            throw ApiException.invalidInput("Model year required");
+        }
+        if (vehicleService.existsPlateNumber(ApiContext.get().getCompanyId(), vehicleCreateRequestDTO.getNumberPlate())) {
+            throw ApiException.invalidInput("Plate number exists");
+        }
+        if (vehicleService.existsChassisNumber(ApiContext.get().getCompanyId(), vehicleCreateRequestDTO.getChassisNumber())) {
+            throw ApiException.invalidInput("Chassis number exists");
         }
 
         Vehicle vehicle = new Vehicle();

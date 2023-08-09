@@ -17,6 +17,7 @@ import javax.persistence.Table;
 public class Vehicle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID")
     private Long id;
 
     @Column(name = "number_plate", nullable = false)

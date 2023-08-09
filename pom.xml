@@ -93,6 +93,16 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.13.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-apt</artifactId>
+            <version>4.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-jpa</artifactId>
+            <version>4.2.2</version>
+        </dependency>
 
 
 
@@ -131,6 +141,23 @@
                                 <implicitHeaders>true</implicitHeaders>
                                 <useTags>true</useTags>
                             </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.mysema.maven</groupId>
+                <artifactId>maven-apt-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>target/generated-sources/java</outputDirectory>
+                            <processor>com.mysema.query.apt.jpa.JPAAnnotationProcessor, lombok.launch.AnnotationProcessorHider$AnnotationProcessor</processor>
                         </configuration>
                     </execution>
                 </executions>
