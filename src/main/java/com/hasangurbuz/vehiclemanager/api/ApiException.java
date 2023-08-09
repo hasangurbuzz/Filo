@@ -15,4 +15,11 @@ public class ApiException extends RuntimeException {
         ex.setMessage("You have not access");
         return ex;
     }
+
+    public static ApiException invalidInput(String message) {
+        ApiException ex = new ApiException();
+        ex.setCode(ApiExceptionCode.INVALID_INPUT);
+        ex.setMessage(message);
+        return ex;
+    }
 }

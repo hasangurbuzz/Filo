@@ -5,6 +5,7 @@ import com.hasangurbuz.vehiclemanager.api.ApiException;
 import com.hasangurbuz.vehiclemanager.api.mapper.VehicleMapper;
 import com.hasangurbuz.vehiclemanager.domain.Vehicle;
 import com.hasangurbuz.vehiclemanager.service.VehicleService;
+import org.codehaus.plexus.util.StringUtils;
 import org.openapitools.api.VehicleApi;
 import org.openapitools.model.UserRoleDTO;
 import org.openapitools.model.VehicleCreateRequestDTO;
@@ -33,6 +34,19 @@ public class VehicleApiController implements VehicleApi {
             throw ApiException.accessDenied();
         }
 
+        if (StringUtils.isBlank(vehicleCreateRequestDTO.getBrand())) {
+            throw ApiException.invalidInput("Brand is required");
+        }
+        if (StringUtils.isBlank(vehicleCreateRequestDTO.getNumberPlate())) {
+            throw ApiException.invalidInput("Number plate is required");
+        }
+        if (StringUtils.isBlank(vehicleCreateRequestDTO.getModel())) {
+            throw ApiException.invalidInput("Model is required");
+        }
+        if (vehicleCreateRequestDTO.getModelYear() == null) {
+            throw ApiException.invalidInput("Model year is required");
+        }
+
         Vehicle vehicle = new Vehicle();
         vehicle.setBrand(vehicleCreateRequestDTO.getBrand());
         vehicle.setTag(vehicleCreateRequestDTO.getTag());
@@ -41,6 +55,7 @@ public class VehicleApiController implements VehicleApi {
         vehicle.setChassisNumber(vehicleCreateRequestDTO.getChassisNumber());
         vehicle.setNumberPlate(vehicleCreateRequestDTO.getNumberPlate());
         vehicle.setCompanyId(ApiContext.get().getCompanyId());
+
 
         vehicle = vehicleService.create(vehicle);
         VehicleDTO dto = vehicleMapper.toDto(vehicle);
@@ -54,21 +69,19 @@ public class VehicleApiController implements VehicleApi {
     }
 
     @Override
-    public ResponseEntity<List<VehicleDTO>> vehiclePost() {
-        List<Vehicle> vehicles = vehicleService.getVehicles();
-        List<VehicleDTO> vehicleDtos = vehicleMapper.toDtoList(vehicles);
-        return ResponseEntity.ok(vehicleDtos);
+    public ResponseEntity<List<VehicleDTO>> get() {
+        return VehicleApi.super.get();
     }
-
 
     @Override
-    public ResponseEntity<VehicleDTO> vehicleUpdateIdPost(String id, VehicleDTO vehicleDto) {
-        Vehicle oldVehicle = vehicleMapper.toEntity(vehicleDto);
+    public ResponseEntity<VehicleDTO> update(String id, VehicleDTO vehicleDTO) {
+        Vehicle oldVehicle = vehicleMapper.toEntity(vehicleDTO);
 
         Vehicle updatedVehicle = vehicleService.updateVehicle(Long.valueOf(id), oldVehicle);
-        vehicleDto = vehicleMapper.toDto(updatedVehicle);
-        return ResponseEntity.ok(vehicleDto);
+        vehicleDTO = vehicleMapper.toDto(updatedVehicle);
+        return ResponseEntity.ok(vehicleDTO);
     }
+
 
 
 }

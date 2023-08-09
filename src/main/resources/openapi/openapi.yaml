@@ -10,6 +10,7 @@ paths:
       tags:
         - vehicle
       summary: Get vehicles
+      operationId: vehicle_get
       parameters:
         - $ref: "#/components/parameters/XUser"
       responses:
@@ -69,6 +70,7 @@ paths:
       tags:
         - vehicle
       summary: Update vehicle
+      operationId: vehicle_update
       parameters:
         - $ref: "#/components/parameters/XUser"
         - in: path
