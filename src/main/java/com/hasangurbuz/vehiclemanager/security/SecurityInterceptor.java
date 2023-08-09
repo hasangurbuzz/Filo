@@ -21,7 +21,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
     @Autowired
     private ObjectMapper objectMapper;
 
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         XUserDTO user = this.authenticatedUser(request);
@@ -42,7 +41,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
             return false;
         }
 
-
         ApiContext apiCtx = ApiContext.create();
 
         apiCtx.setUserId(user.getUserId());
@@ -53,10 +51,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
         apiCtx.setCompanyName(user.getCompanyName());
 
         return true;
-
-
     }
-
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
