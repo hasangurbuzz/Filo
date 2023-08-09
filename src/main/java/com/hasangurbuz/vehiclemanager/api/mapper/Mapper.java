@@ -1,4 +1,4 @@
-package com.hasangurbuz.vehiclemanager.mapper;
+package com.hasangurbuz.vehiclemanager.api.mapper;
 
 import java.util.List;
 

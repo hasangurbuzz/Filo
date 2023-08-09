@@ -1,16 +1,16 @@
-package com.hasangurbuz.vehiclemanager.mapper;
+package com.hasangurbuz.vehiclemanager.api.mapper;
 
 import com.hasangurbuz.vehiclemanager.domain.Vehicle;
-import org.openapitools.model.VehicleDto;
+import org.openapitools.model.VehicleDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class VehicleMapper implements Mapper<Vehicle, VehicleDto> {
+public class VehicleMapper implements Mapper<Vehicle, VehicleDTO> {
     @Override
-    public Vehicle toEntity(VehicleDto dto) {
+    public Vehicle toEntity(VehicleDTO dto) {
         if (dto == null) return null;
 
         Vehicle vehicle = new Vehicle();
@@ -24,9 +24,9 @@ public class VehicleMapper implements Mapper<Vehicle, VehicleDto> {
     }
 
     @Override
-    public VehicleDto toDto(Vehicle entity) {
+    public VehicleDTO toDto(Vehicle entity) {
         if (entity == null) return null;
-        VehicleDto dto = new VehicleDto();
+        VehicleDTO dto = new VehicleDTO();
         dto.setId(entity.getId().toString());
         dto.setBrand(entity.getBrand());
         dto.setModel(entity.getModel());
@@ -38,8 +38,8 @@ public class VehicleMapper implements Mapper<Vehicle, VehicleDto> {
     }
 
     @Override
-    public List<VehicleDto> toDtoList(List<Vehicle> entityList) {
-        List<VehicleDto> vehicleDtoList = new ArrayList<>(entityList.size());
+    public List<VehicleDTO> toDtoList(List<Vehicle> entityList) {
+        List<VehicleDTO> vehicleDtoList = new ArrayList<>(entityList.size());
         for (Vehicle vehicle : entityList) {
             vehicleDtoList.add(toDto(vehicle));
         }

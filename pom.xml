@@ -120,6 +120,12 @@
                             <inputSpec>${project.basedir}/src/main/resources/openapi/openapi.yaml</inputSpec>
                             <generatorName>spring</generatorName>
                             <output>${project.build.directory}/generated-sources/openapi</output>
+                            <removeOperationIdPrefix>true</removeOperationIdPrefix>
+                            <modelNameSuffix>DTO</modelNameSuffix>
+                            <configOptions>
+                                <implicitHeaders>true</implicitHeaders>
+                                <useTags>true</useTags>
+                            </configOptions>
                         </configuration>
                     </execution>
                 </executions>

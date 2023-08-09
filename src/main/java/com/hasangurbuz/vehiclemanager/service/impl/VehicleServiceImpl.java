@@ -1,7 +1,7 @@
 package com.hasangurbuz.vehiclemanager.service.impl;
 
 import com.hasangurbuz.vehiclemanager.domain.Vehicle;
-import com.hasangurbuz.vehiclemanager.dto.UserContext;
+import com.hasangurbuz.vehiclemanager.api.ApiContext;
 import com.hasangurbuz.vehiclemanager.repository.VehicleRepository;
 import com.hasangurbuz.vehiclemanager.service.VehicleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public Vehicle addVehicle(Vehicle vehicle) {
-        vehicle.setCompanyId(UserContext.get().getCompanyId());
+        vehicle.setCompanyId(ApiContext.get().getCompanyId());
         vehicle.setIsDeleted(false);
         return vehicleRepository.save(vehicle);
     }
@@ -41,14 +41,14 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public List<Vehicle> getVehicles() {
         List<Vehicle> vehicles = vehicleRepository
-                .findVehicleByCompanyIdAndIsDeletedFalse(UserContext.get().getCompanyId());
+                .findVehicleByCompanyIdAndIsDeletedFalse(ApiContext.get().getCompanyId());
         return vehicles;
     }
 
     @Override
     public Vehicle getVehicleById(Long id) {
         Vehicle vehicle = vehicleRepository
-                .findVehicleByIdAndCompanyIdAndIsDeletedFalse(id, UserContext.get().getCompanyId());
+                .findVehicleByIdAndCompanyIdAndIsDeletedFalse(id, ApiContext.get().getCompanyId());
         return vehicle;
     }
 
