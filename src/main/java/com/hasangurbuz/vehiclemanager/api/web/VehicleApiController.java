@@ -45,8 +45,6 @@ public class VehicleApiController implements VehicleApi {
         vehicle = vehicleService.create(vehicle);
         VehicleDTO dto = vehicleMapper.toDto(vehicle);
         return ResponseEntity.ok(dto);
-
-
     }
 
     @Override
