@@ -29,7 +29,7 @@ public class VehicleApiController implements VehicleApi {
     @Override
     @Transactional
     public ResponseEntity<VehicleDTO> create(VehicleCreateRequestDTO vehicleCreateRequestDTO) {
-        if (ApiContext.get().getUserRole().equals(UserRoleDTO.COMPANYADMIN)){
+        if (ApiContext.get().getUserRole() !=UserRoleDTO.COMPANYADMIN){
             Vehicle vehicle = new Vehicle();
             vehicle.setBrand(vehicleCreateRequestDTO.getBrand());
             vehicle.setTag(vehicleCreateRequestDTO.getTag());
