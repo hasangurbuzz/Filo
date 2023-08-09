@@ -17,7 +17,6 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public Vehicle create(Vehicle vehicle) {
-        vehicle.setCompanyId(ApiContext.get().getCompanyId());
         vehicle.setIsDeleted(false);
         vehicle = vehicleRepository.save(vehicle);
         return vehicle;
