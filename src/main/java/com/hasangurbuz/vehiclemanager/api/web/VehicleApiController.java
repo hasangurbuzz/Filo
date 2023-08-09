@@ -2,9 +2,8 @@ package com.hasangurbuz.vehiclemanager.api.web;
 
 import com.hasangurbuz.vehiclemanager.api.ApiContext;
 import com.hasangurbuz.vehiclemanager.api.ApiException;
-import com.hasangurbuz.vehiclemanager.api.ApiExceptionCode;
-import com.hasangurbuz.vehiclemanager.domain.Vehicle;
 import com.hasangurbuz.vehiclemanager.api.mapper.VehicleMapper;
+import com.hasangurbuz.vehiclemanager.domain.Vehicle;
 import com.hasangurbuz.vehiclemanager.service.VehicleService;
 import org.openapitools.api.VehicleApi;
 import org.openapitools.model.UserRoleDTO;
@@ -29,7 +28,7 @@ public class VehicleApiController implements VehicleApi {
     @Override
     @Transactional
     public ResponseEntity<VehicleDTO> create(VehicleCreateRequestDTO vehicleCreateRequestDTO) {
-        if (ApiContext.get().getUserRole() !=UserRoleDTO.COMPANYADMIN){
+        if (ApiContext.get().getUserRole() != UserRoleDTO.COMPANYADMIN) {
             Vehicle vehicle = new Vehicle();
             vehicle.setBrand(vehicleCreateRequestDTO.getBrand());
             vehicle.setTag(vehicleCreateRequestDTO.getTag());
@@ -61,7 +60,6 @@ public class VehicleApiController implements VehicleApi {
     }
 
 
-
     @Override
     public ResponseEntity<VehicleDTO> vehicleUpdateIdPost(String id, VehicleDTO vehicleDto) {
         Vehicle oldVehicle = vehicleMapper.toEntity(vehicleDto);
@@ -70,7 +68,6 @@ public class VehicleApiController implements VehicleApi {
         vehicleDto = vehicleMapper.toDto(updatedVehicle);
         return ResponseEntity.ok(vehicleDto);
     }
-
 
 
 }
