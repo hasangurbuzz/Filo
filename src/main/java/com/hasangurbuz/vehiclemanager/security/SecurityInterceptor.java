@@ -39,14 +39,14 @@ public class SecurityInterceptor implements HandlerInterceptor {
         }
 
 
-        ApiContext apiContextThreadLocal = ApiContext.create();
+        ApiContext apiCtx = ApiContext.create();
 
-        apiContextThreadLocal.setUserId(user.getUserId());
-        apiContextThreadLocal.setUserRole(user.getUserRole());
-        apiContextThreadLocal.setName(user.getName());
-        apiContextThreadLocal.setSurname(user.getSurname());
-        apiContextThreadLocal.setCompanyId(user.getCompanyId());
-        apiContextThreadLocal.setCompanyName(user.getCompanyName());
+        apiCtx.setUserId(user.getUserId());
+        apiCtx.setUserRole(user.getUserRole());
+        apiCtx.setName(user.getName());
+        apiCtx.setSurname(user.getSurname());
+        apiCtx.setCompanyId(user.getCompanyId());
+        apiCtx.setCompanyName(user.getCompanyName());
 
         return true;
 
