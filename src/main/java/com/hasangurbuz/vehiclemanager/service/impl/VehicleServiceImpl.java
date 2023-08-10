@@ -1,6 +1,5 @@
 package com.hasangurbuz.vehiclemanager.service.impl;
 
-import com.hasangurbuz.vehiclemanager.api.ApiContext;
 import com.hasangurbuz.vehiclemanager.domain.QVehicle;
 import com.hasangurbuz.vehiclemanager.domain.Vehicle;
 import com.hasangurbuz.vehiclemanager.domain.VehicleAuthority;
@@ -23,6 +22,9 @@ public class VehicleServiceImpl implements VehicleService {
     @Autowired
     private EntityManager entityManager;
 
+    @Autowired
+    private VehicleAuthorityService vAuthService;
+
     @Override
     public Vehicle create(Vehicle vehicle) {
         vehicle.setIsDeleted(false);
@@ -32,36 +34,23 @@ public class VehicleServiceImpl implements VehicleService {
 
 
     @Override
-    public Vehicle update(Long id, Vehicle vehicle) {
-        Vehicle storedVehicle = getVehicleById(id);
-        if (storedVehicle != null) {
-            storedVehicle.setBrand(vehicle.getBrand());
-            storedVehicle.setChassisNumber(vehicle.getChassisNumber());
-            storedVehicle.setModel(vehicle.getModel());
-            storedVehicle.setModelYear(vehicle.getModelYear());
-            storedVehicle.setNumberPlate(vehicle.getNumberPlate());
-            storedVehicle.setTag(vehicle.getTag());
-
-            return vehicleRepo.save(storedVehicle);
-        }
-        return null;
+    public Vehicle update(Vehicle vehicle) {
+        return vehicleRepo.save(vehicle);
     }
 
     @Override
     public Vehicle getVehicleById(Long id) {
-        Vehicle vehicle = vehicleRepo
-                .findVehicleByIdAndCompanyIdAndIsDeletedFalse(id, ApiContext.get().getCompanyId());
-        return vehicle;
+        VehicleAuthority vAuthority = vAuthService.getByVehicleId(id);
+        if (vAuthority == null) {
+            return null;
+        }
+        return vAuthority.getVehicle();
     }
 
     @Override
-    public void deleteVehicle(Long id) {
-        Vehicle vehicle = getVehicleById(id);
-        if (vehicle != null) {
-            vehicle.setIsDeleted(true);
-            vehicleRepo.save(vehicle);
-        }
-
+    public void delete(Vehicle vehicle) {
+        vehicle.setIsDeleted(true);
+        vehicleRepo.save(vehicle);
     }
 
     @Override

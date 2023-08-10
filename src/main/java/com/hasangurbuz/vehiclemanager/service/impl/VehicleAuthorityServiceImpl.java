@@ -27,7 +27,7 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
     private EntityManager entityManager;
 
     @Autowired
-    private VehicleAuthorityRepository authRepo;
+    private VehicleAuthorityRepository vAuthRepo;
 
     @Override
     public PagedResults<VehicleAuthority> search(VehicleListRequestDTO request) {
@@ -43,6 +43,7 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
                         vehicleAuth.vehicle.companyId.eq(ApiContext.get().getCompanyId())
                                 .and(vehicleAuth.userId.eq(ApiContext.get().getUserId()))
                                 .and(vehicleAuth.vehicle.isDeleted.isFalse())
+                                .and(vehicleAuth.isDeleted.isFalse())
                                 .and(vehicleAuth.role.in(ApiContext.get().getUserRole(), UserRole.STANDARD))
 
                 );
@@ -92,7 +93,7 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
     @Override
     public VehicleAuthority create(VehicleAuthority vehicleAuthority) {
         vehicleAuthority.setDeleted(false);
-        vehicleAuthority = authRepo.save(vehicleAuthority);
+        vehicleAuthority = vAuthRepo.save(vehicleAuthority);
         return vehicleAuthority;
     }
 
@@ -114,6 +115,12 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
                 ).fetchOne();
 
         return authority;
+    }
+
+    @Override
+    public void delete(VehicleAuthority vehicleAuthority) {
+        vehicleAuthority.setDeleted(true);
+        vAuthRepo.save(vehicleAuthority);
     }
 
 

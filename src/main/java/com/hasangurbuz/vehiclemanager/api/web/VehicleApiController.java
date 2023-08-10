@@ -18,6 +18,7 @@ import org.openapitools.model.VehicleCreateRequestDTO;
 import org.openapitools.model.VehicleDTO;
 import org.openapitools.model.VehicleListRequestDTO;
 import org.openapitools.model.VehicleListResponseDTO;
+import org.openapitools.model.VehicleUpdateRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -142,17 +143,47 @@ public class VehicleApiController implements VehicleApi {
     }
 
     @Override
-    public ResponseEntity<Void> delete(String id) {
-        return VehicleApi.super.delete(id);
+    @Transactional
+    public ResponseEntity<VehicleDTO> update(Long id, VehicleUpdateRequestDTO vehicleUpdateRequestDTO) {
+        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
+            throw ApiException.accessDenied();
+        }
+
+        VehicleAuthority vAuthority = vAuthService.getByVehicleId(id);
+
+        if (vAuthority == null) {
+            throw ApiException.notFound("Not found : " + id);
+        }
+
+        Vehicle vehicle = vAuthority.getVehicle();
+        vehicle.setBrand(vehicleUpdateRequestDTO.getBrand());
+        vehicle.setTag(vehicleUpdateRequestDTO.getTag());
+        vehicle.setNumberPlate(vehicleUpdateRequestDTO.getNumberPlate());
+        vehicle.setChassisNumber(vehicleUpdateRequestDTO.getChassisNumber());
+        vehicle.setModel(vehicleUpdateRequestDTO.getModel());
+        vehicle.setModelYear(vehicleUpdateRequestDTO.getModelYear());
+
+        vehicle = vehicleService.update(vehicle);
+
+        return ResponseEntity.ok(vehicleMapper.toDto(vehicle));
     }
 
     @Override
-    public ResponseEntity<VehicleDTO> update(Long id, VehicleDTO vehicleDTO) {
-        Vehicle oldVehicle = vehicleMapper.toEntity(vehicleDTO);
+    @Transactional
+    public ResponseEntity<Void> delete(Long id) {
+        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
+            throw ApiException.accessDenied();
+        }
 
-        Vehicle updatedVehicle = vehicleService.update(Long.valueOf(id), oldVehicle);
-        vehicleDTO = vehicleMapper.toDto(updatedVehicle);
-        return ResponseEntity.ok(vehicleDTO);
+        VehicleAuthority vAuthority = vAuthService.getByVehicleId(id);
+
+        if (vAuthority == null) {
+            throw ApiException.notFound("Not found id : " + id);
+        }
+
+        vehicleService.delete(vAuthority.getVehicle());
+        vAuthService.delete(vAuthority);
+        return ResponseEntity.ok().build();
     }
 
 

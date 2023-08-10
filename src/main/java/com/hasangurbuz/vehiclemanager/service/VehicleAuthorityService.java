@@ -10,4 +10,6 @@ public interface VehicleAuthorityService {
 
     VehicleAuthority getByVehicleId(Long id);
 
+    void delete(VehicleAuthority vehicleAuthority);
+
 }

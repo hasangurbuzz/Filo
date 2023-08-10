@@ -5,11 +5,11 @@ import com.hasangurbuz.vehiclemanager.domain.Vehicle;
 public interface VehicleService {
     Vehicle create(Vehicle vehicle);
 
-    Vehicle update(Long id, Vehicle vehicle);
+    Vehicle update(Vehicle vehicle);
 
     Vehicle getVehicleById(Long id);
 
-    void deleteVehicle(Long id);
+    void delete(Vehicle vehicle);
 
     boolean existsPlateNumber(Long companyId, String plateNumber);
 
