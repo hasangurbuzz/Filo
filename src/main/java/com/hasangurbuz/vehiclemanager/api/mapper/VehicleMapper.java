@@ -1,6 +1,9 @@
 package com.hasangurbuz.vehiclemanager.api.mapper;
 
+import com.hasangurbuz.vehiclemanager.api.ApiContext;
+import com.hasangurbuz.vehiclemanager.domain.UserRole;
 import com.hasangurbuz.vehiclemanager.domain.Vehicle;
+import org.openapitools.model.VehicleActionAccessDTO;
 import org.openapitools.model.VehicleDTO;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +38,14 @@ public class VehicleMapper implements Mapper<Vehicle, VehicleDTO> {
         dto.setNumberPlate(entity.getNumberPlate());
         dto.setChassisNumber(entity.getChassisNumber());
         dto.setCreationDate(entity.getCreationDate());
+
+        if (ApiContext.get().getUserRole() == UserRole.COMPANY_ADMIN) {
+            VehicleActionAccessDTO actionAccess = new VehicleActionAccessDTO();
+            actionAccess.setUpdate(true);
+            actionAccess.setDelete(true);
+            actionAccess.setManageUsers(true);
+            dto.setActionAccess(actionAccess);
+        }
         return dto;
     }
 

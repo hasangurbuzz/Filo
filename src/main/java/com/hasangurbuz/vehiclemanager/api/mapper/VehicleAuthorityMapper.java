@@ -30,14 +30,6 @@ public class VehicleAuthorityMapper implements Mapper<VehicleAuthority, VehicleD
     public VehicleDTO toDto(VehicleAuthority entity) {
         Vehicle vehicle = entity.getVehicle();
         VehicleDTO dto = vehicleMapper.toDto(vehicle);
-
-        if (ApiContext.get().getUserRole() == UserRole.COMPANY_ADMIN) {
-            VehicleActionAccessDTO actionAccess = new VehicleActionAccessDTO();
-            actionAccess.setUpdate(true);
-            actionAccess.setDelete(true);
-            actionAccess.setManageUsers(true);
-            dto.setActionAccess(actionAccess);
-        }
         return dto;
     }
 
