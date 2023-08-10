@@ -15,10 +15,12 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.openapitools.model.VehicleListRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import java.util.List;
 
+@Service
 public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
 
     @Autowired
