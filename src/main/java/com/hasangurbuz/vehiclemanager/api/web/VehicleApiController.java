@@ -120,12 +120,8 @@ public class VehicleApiController implements VehicleApi {
         PagedResults<VehicleAuthority> vehiclePagedResults = vAuthService.search(vehicleListRequestDTO);
         List<VehicleAuthority> vAuthorityList = vehiclePagedResults.getItems();
 
-        if (vAuthorityList.size() == 0) {
-            throw ApiException.notFound("Not found any");
-        }
-
         VehicleListResponseDTO response = new VehicleListResponseDTO();
-        response.setItems(vAuthMapper.toDtoList(vehiclePagedResults.getItems()));
+        response.setItems(vAuthMapper.toDtoList(vAuthorityList));
         response.setTotal(vehiclePagedResults.getTotal());
         return ResponseEntity.ok(response);
     }
@@ -148,6 +144,31 @@ public class VehicleApiController implements VehicleApi {
         if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
             throw ApiException.accessDenied();
         }
+
+        if (StringUtils.isBlank(vehicleUpdateRequestDTO.getBrand())) {
+            throw ApiException.invalidInput("Brand required");
+        }
+
+        if (StringUtils.isBlank(vehicleUpdateRequestDTO.getNumberPlate())) {
+            throw ApiException.invalidInput("Number plate required");
+        }
+
+        if (StringUtils.isBlank(vehicleUpdateRequestDTO.getModel())) {
+            throw ApiException.invalidInput("Model required");
+        }
+
+        if (vehicleUpdateRequestDTO.getModelYear() == null) {
+            throw ApiException.invalidInput("Model year required");
+        }
+
+        if (vehicleService.existsPlateNumber(ApiContext.get().getCompanyId(), vehicleUpdateRequestDTO.getNumberPlate())) {
+            throw ApiException.invalidInput("Plate number exists");
+        }
+
+        if (vehicleService.existsChassisNumber(ApiContext.get().getCompanyId(), vehicleUpdateRequestDTO.getChassisNumber())) {
+            throw ApiException.invalidInput("Chassis number exists");
+        }
+
 
         VehicleAuthority vAuthority = vAuthService.getByVehicleId(id);
 
@@ -182,9 +203,7 @@ public class VehicleApiController implements VehicleApi {
         }
 
         vehicleService.delete(vAuthority.getVehicle());
-        vAuthService.delete(vAuthority);
         return ResponseEntity.ok().build();
     }
-
 
 }

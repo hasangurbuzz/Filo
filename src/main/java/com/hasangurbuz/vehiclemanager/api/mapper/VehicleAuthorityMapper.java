@@ -36,6 +36,10 @@ public class VehicleAuthorityMapper implements Mapper<VehicleAuthority, VehicleD
     @Override
     public List<VehicleDTO> toDtoList(List<VehicleAuthority> entityList) {
         List<VehicleDTO> dtoList = new ArrayList<>();
+        if (entityList.isEmpty()){
+            return dtoList;
+        }
+
         for (VehicleAuthority authority : entityList) {
             VehicleDTO dto = toDto(authority);
             dtoList.add(dto);
