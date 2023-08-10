@@ -3,7 +3,6 @@ package com.hasangurbuz.vehiclemanager.api;
 import com.hasangurbuz.vehiclemanager.domain.UserRole;
 import lombok.Getter;
 import lombok.Setter;
-import org.openapitools.model.UserRoleDTO;
 
 @Getter
 @Setter

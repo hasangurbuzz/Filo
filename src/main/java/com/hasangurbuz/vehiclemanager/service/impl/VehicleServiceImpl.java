@@ -2,27 +2,17 @@ package com.hasangurbuz.vehiclemanager.service.impl;
 
 import com.hasangurbuz.vehiclemanager.api.ApiContext;
 import com.hasangurbuz.vehiclemanager.domain.QVehicle;
-import com.hasangurbuz.vehiclemanager.domain.QVehicleAuthority;
 import com.hasangurbuz.vehiclemanager.domain.Vehicle;
 import com.hasangurbuz.vehiclemanager.domain.VehicleAuthority;
-import com.hasangurbuz.vehiclemanager.repository.VehicleAuthorityRepository;
 import com.hasangurbuz.vehiclemanager.repository.VehicleRepository;
-import com.hasangurbuz.vehiclemanager.service.PagedResults;
+import com.hasangurbuz.vehiclemanager.service.VehicleAuthorityService;
 import com.hasangurbuz.vehiclemanager.service.VehicleService;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.EntityPathBase;
-import com.querydsl.core.types.dsl.PathBuilder;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
-import org.apache.commons.lang3.StringUtils;
-import org.openapitools.model.SortDTO;
-import org.openapitools.model.VehicleListRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
-import java.util.List;
 
 @Service
 public class VehicleServiceImpl implements VehicleService {
@@ -31,25 +21,14 @@ public class VehicleServiceImpl implements VehicleService {
     private VehicleRepository vehicleRepo;
 
     @Autowired
-    private VehicleAuthorityRepository authRepo;
-
-    @Autowired
     private EntityManager entityManager;
 
     @Override
     public Vehicle create(Vehicle vehicle) {
         vehicle.setIsDeleted(false);
         vehicle = vehicleRepo.save(vehicle);
-
-        VehicleAuthority authority = new VehicleAuthority();
-        authority.setVehicle(vehicle);
-        authority.setRole(ApiContext.get().getUserRole());
-        authority.setUserId(ApiContext.get().getUserId());
-        authRepo.save(authority);
-
         return vehicle;
     }
-
 
 
     @Override

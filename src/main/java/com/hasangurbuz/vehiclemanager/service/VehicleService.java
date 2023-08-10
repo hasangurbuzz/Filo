@@ -1,9 +1,6 @@
 package com.hasangurbuz.vehiclemanager.service;
 
 import com.hasangurbuz.vehiclemanager.domain.Vehicle;
-import org.openapitools.model.VehicleListRequestDTO;
-
-import java.util.List;
 
 public interface VehicleService {
     Vehicle create(Vehicle vehicle);

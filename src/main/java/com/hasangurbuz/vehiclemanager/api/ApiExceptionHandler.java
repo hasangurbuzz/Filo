@@ -11,7 +11,7 @@ import org.springframework.web.context.request.WebRequest;
 public class ApiExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ErrorDTO> handle(ApiException ex, WebRequest request){
+    public ResponseEntity<ErrorDTO> handle(ApiException ex, WebRequest request) {
         ErrorDTO error = new ErrorDTO();
         error.setCode(ex.getCode());
         error.setMessage(ex.getMessage());

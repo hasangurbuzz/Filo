@@ -178,7 +178,7 @@ components:
     UserRole:
       type: string
       enum:
-        - COMPANYADMIN
+        - COMPANY_ADMIN
         - STANDARD
 
     VehicleListRequest:
@@ -260,6 +260,22 @@ components:
         creationDate:
           type: string
           format: date-time
+        actionAccess:
+          $ref: '#/components/schemas/VehicleActionAccess'
+
+    VehicleActionAccess:
+      type: object
+      required:
+        - update
+        - delete
+        - manageUsers
+      properties:
+        update:
+          type: boolean
+        delete:
+          type: boolean
+        manageUsers:
+          type: boolean
 
     Sort:
       type: object
@@ -275,6 +291,8 @@ components:
           enum:
             - ASC
             - DESC
+
+
 
 
 

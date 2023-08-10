@@ -4,7 +4,6 @@ import com.hasangurbuz.vehiclemanager.domain.Vehicle;
 import org.openapitools.model.VehicleDTO;
 import org.springframework.stereotype.Component;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

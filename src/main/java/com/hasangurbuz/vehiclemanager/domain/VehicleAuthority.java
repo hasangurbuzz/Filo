@@ -34,4 +34,7 @@ public class VehicleAuthority {
     @Column(name = "user_role")
     @Enumerated(EnumType.STRING)
     private UserRole role;
+
+    @Column(name = "is_deleted")
+    private boolean isDeleted;
 }

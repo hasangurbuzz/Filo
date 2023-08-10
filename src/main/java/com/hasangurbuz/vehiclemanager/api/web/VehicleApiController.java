@@ -3,9 +3,11 @@ package com.hasangurbuz.vehiclemanager.api.web;
 import com.hasangurbuz.vehiclemanager.api.ApiConstant;
 import com.hasangurbuz.vehiclemanager.api.ApiContext;
 import com.hasangurbuz.vehiclemanager.api.ApiException;
+import com.hasangurbuz.vehiclemanager.api.mapper.VehicleAuthorityMapper;
 import com.hasangurbuz.vehiclemanager.api.mapper.VehicleMapper;
 import com.hasangurbuz.vehiclemanager.domain.UserRole;
 import com.hasangurbuz.vehiclemanager.domain.Vehicle;
+import com.hasangurbuz.vehiclemanager.domain.VehicleAuthority;
 import com.hasangurbuz.vehiclemanager.service.PagedResults;
 import com.hasangurbuz.vehiclemanager.service.VehicleAuthorityService;
 import com.hasangurbuz.vehiclemanager.service.VehicleService;
@@ -21,9 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @RestController
 public class VehicleApiController implements VehicleApi {
@@ -32,16 +32,19 @@ public class VehicleApiController implements VehicleApi {
     private VehicleService vehicleService;
 
     @Autowired
-    private VehicleAuthorityService authorityService;
+    private VehicleAuthorityService vAuthService;
 
     @Autowired
     private VehicleMapper vehicleMapper;
+
+    @Autowired
+    private VehicleAuthorityMapper vAuthMapper;
 
     @Override
     @Transactional
     public ResponseEntity<VehicleDTO> create(VehicleCreateRequestDTO vehicleCreateRequestDTO) {
 
-        if (ApiContext.get().getUserRole() != UserRole.COMPANYADMIN) {
+        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
             throw ApiException.accessDenied();
         }
 
@@ -80,13 +83,20 @@ public class VehicleApiController implements VehicleApi {
         vehicle.setCreationDate(OffsetDateTime.now());
 
         vehicle = vehicleService.create(vehicle);
+
+        VehicleAuthority authority = new VehicleAuthority();
+        authority.setVehicle(vehicle);
+        authority.setRole(ApiContext.get().getUserRole());
+        authority.setUserId(ApiContext.get().getUserId());
+        vAuthService.create(authority);
+
         VehicleDTO dto = vehicleMapper.toDto(vehicle);
         return ResponseEntity.ok(dto);
     }
 
     @Override
     public ResponseEntity<VehicleListResponseDTO> search(VehicleListRequestDTO vehicleListRequestDTO) {
-        if (vehicleListRequestDTO == null){
+        if (vehicleListRequestDTO == null) {
             vehicleListRequestDTO = new VehicleListRequestDTO();
         }
         if (vehicleListRequestDTO.getFrom() == null) {
@@ -105,10 +115,11 @@ public class VehicleApiController implements VehicleApi {
             vehicleListRequestDTO.getSort().setDirection(SortDTO.DirectionEnum.ASC);
         }
 
-        PagedResults<Vehicle> vehiclePagedResults = authorityService.search(vehicleListRequestDTO);
+        PagedResults<VehicleAuthority> vehiclePagedResults = vAuthService.search(vehicleListRequestDTO);
+
 
         VehicleListResponseDTO response = new VehicleListResponseDTO();
-        response.setItems(vehicleMapper.toDtoList(vehiclePagedResults.getItems()));
+        response.setItems(vAuthMapper.toDtoList(vehiclePagedResults.getItems()));
         response.setTotal(vehiclePagedResults.getTotal());
         return ResponseEntity.ok(response);
     }

@@ -24,7 +24,6 @@ CREATE TABLE T_Vehicle_Authority
     ID                    BIGSERIAL PRIMARY KEY,
     user_id               BIGINT,
     authorized_vehicle_id BIGINT,
-    user_role             USER_ROLE,
     FOREIGN KEY (authorized_vehicle_id) REFERENCES T_Vehicle (id)
 );
 
