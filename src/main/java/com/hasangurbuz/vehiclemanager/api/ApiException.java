@@ -22,4 +22,13 @@ public class ApiException extends RuntimeException {
         ex.setMessage(message);
         return ex;
     }
+
+    public static ApiException notFound(String message) {
+        ApiException ex = new ApiException();
+        ex.setCode(ApiExceptionCode.NOT_FOUND);
+        ex.setMessage(message);
+        return ex;
+    }
+
+
 }

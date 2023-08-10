@@ -43,7 +43,8 @@ paths:
         - in: path
           name: id
           schema:
-            type: string
+            type: integer
+            format: int64
           required: true
       responses:
         '200':
@@ -98,7 +99,8 @@ paths:
         - in: path
           name: id
           schema:
-            type: string
+            type: integer
+            format: int64
           required: true
       requestBody:
         required: true

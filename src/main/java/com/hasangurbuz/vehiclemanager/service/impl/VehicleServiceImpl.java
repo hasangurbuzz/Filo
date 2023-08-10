@@ -32,7 +32,7 @@ public class VehicleServiceImpl implements VehicleService {
 
 
     @Override
-    public Vehicle updateVehicle(Long id, Vehicle vehicle) {
+    public Vehicle update(Long id, Vehicle vehicle) {
         Vehicle storedVehicle = getVehicleById(id);
         if (storedVehicle != null) {
             storedVehicle.setBrand(vehicle.getBrand());

@@ -38,8 +38,7 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
         JPAQuery<VehicleAuthority> query = queryFactory
-                .select(vehicleAuth)
-                .from(vehicleAuth)
+                .selectFrom(vehicleAuth)
                 .where(
                         vehicleAuth.vehicle.companyId.eq(ApiContext.get().getCompanyId())
                                 .and(vehicleAuth.userId.eq(ApiContext.get().getUserId()))
@@ -95,6 +94,26 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
         vehicleAuthority.setDeleted(false);
         vehicleAuthority = authRepo.save(vehicleAuthority);
         return vehicleAuthority;
+    }
+
+    @Override
+    public VehicleAuthority getByVehicleId(Long id) {
+        QVehicleAuthority vehicleAuth = QVehicleAuthority.vehicleAuthority;
+        QVehicle vehicle = QVehicle.vehicle;
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        VehicleAuthority authority = queryFactory
+                .selectFrom(vehicleAuth)
+                .where(
+                        vehicleAuth.isDeleted.isFalse()
+                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
+                                .and(vehicleAuth.role.in(ApiContext.get().getUserRole(), UserRole.STANDARD))
+                                .and(vehicleAuth.vehicle.id.eq(id))
+                                .and(vehicleAuth.userId.eq(ApiContext.get().getUserId()))
+                                .and(vehicleAuth.vehicle.companyId.eq(ApiContext.get().getCompanyId()))
+                ).fetchOne();
+
+        return authority;
     }
 
 

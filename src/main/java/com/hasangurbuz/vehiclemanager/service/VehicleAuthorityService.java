@@ -7,4 +7,7 @@ public interface VehicleAuthorityService {
     PagedResults<VehicleAuthority> search(VehicleListRequestDTO request);
 
     VehicleAuthority create(VehicleAuthority vehicleAuthority);
+
+    VehicleAuthority getByVehicleId(Long id);
+
 }

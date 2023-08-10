@@ -5,7 +5,7 @@ import com.hasangurbuz.vehiclemanager.domain.Vehicle;
 public interface VehicleService {
     Vehicle create(Vehicle vehicle);
 
-    Vehicle updateVehicle(Long id, Vehicle vehicle);
+    Vehicle update(Long id, Vehicle vehicle);
 
     Vehicle getVehicleById(Long id);
 

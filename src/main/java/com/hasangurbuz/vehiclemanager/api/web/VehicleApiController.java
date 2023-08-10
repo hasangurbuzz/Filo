@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @RestController
 public class VehicleApiController implements VehicleApi {
@@ -116,7 +117,11 @@ public class VehicleApiController implements VehicleApi {
         }
 
         PagedResults<VehicleAuthority> vehiclePagedResults = vAuthService.search(vehicleListRequestDTO);
+        List<VehicleAuthority> vAuthorityList = vehiclePagedResults.getItems();
 
+        if (vAuthorityList.size() == 0) {
+            throw ApiException.notFound("Not found any");
+        }
 
         VehicleListResponseDTO response = new VehicleListResponseDTO();
         response.setItems(vAuthMapper.toDtoList(vehiclePagedResults.getItems()));
@@ -125,8 +130,15 @@ public class VehicleApiController implements VehicleApi {
     }
 
     @Override
-    public ResponseEntity<VehicleDTO> getById(String id) {
-        return VehicleApi.super.getById(id);
+    public ResponseEntity<VehicleDTO> getById(Long id) {
+        VehicleAuthority vAuthority = vAuthService.getByVehicleId(id);
+
+        if (vAuthority == null) {
+            throw ApiException.notFound("Not found : " + id);
+        }
+
+        VehicleDTO vehicle = vAuthMapper.toDto(vAuthority);
+        return ResponseEntity.ok(vehicle);
     }
 
     @Override
@@ -135,10 +147,10 @@ public class VehicleApiController implements VehicleApi {
     }
 
     @Override
-    public ResponseEntity<VehicleDTO> update(String id, VehicleDTO vehicleDTO) {
+    public ResponseEntity<VehicleDTO> update(Long id, VehicleDTO vehicleDTO) {
         Vehicle oldVehicle = vehicleMapper.toEntity(vehicleDTO);
 
-        Vehicle updatedVehicle = vehicleService.updateVehicle(Long.valueOf(id), oldVehicle);
+        Vehicle updatedVehicle = vehicleService.update(Long.valueOf(id), oldVehicle);
         vehicleDTO = vehicleMapper.toDto(updatedVehicle);
         return ResponseEntity.ok(vehicleDTO);
     }
