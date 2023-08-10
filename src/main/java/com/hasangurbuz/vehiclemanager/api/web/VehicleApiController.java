@@ -109,7 +109,7 @@ public class VehicleApiController implements VehicleApi {
 
         VehicleListResponseDTO response = new VehicleListResponseDTO();
         response.setItems(vehicleMapper.toDtoList(vehiclePagedResults.getItems()));
-//        response.setTotal(vehiclePagedResults.getTotal());
+        response.setTotal(vehiclePagedResults.getTotal());
         return ResponseEntity.ok(response);
     }
 
