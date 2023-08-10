@@ -1,30 +1,82 @@
 package com.hasangurbuz.vehiclemanager.service.impl;
 
 import com.hasangurbuz.vehiclemanager.api.ApiContext;
+import com.hasangurbuz.vehiclemanager.domain.QVehicle;
+import com.hasangurbuz.vehiclemanager.domain.QVehicleAuthority;
 import com.hasangurbuz.vehiclemanager.domain.Vehicle;
+import com.hasangurbuz.vehiclemanager.domain.VehicleAuthority;
+import com.hasangurbuz.vehiclemanager.repository.VehicleAuthorityRepository;
 import com.hasangurbuz.vehiclemanager.repository.VehicleRepository;
 import com.hasangurbuz.vehiclemanager.service.VehicleService;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.EntityPathBase;
+import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.core.types.dsl.StringPath;
+import com.querydsl.jpa.impl.JPAQuery;
+import org.apache.commons.lang3.StringUtils;
+import org.openapitools.model.SortDTO;
+import org.openapitools.model.VehicleListRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.EntityManager;
 import java.util.List;
 
 @Service
 public class VehicleServiceImpl implements VehicleService {
 
     @Autowired
-    private VehicleRepository vehicleRepository;
+    private VehicleRepository vehicleRepo;
+
+    @Autowired
+    private VehicleAuthorityRepository authRepo;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @Override
     public Vehicle create(Vehicle vehicle) {
         vehicle.setIsDeleted(false);
-        vehicle = vehicleRepository.save(vehicle);
+        vehicle = vehicleRepo.save(vehicle);
+
+        VehicleAuthority authority = new VehicleAuthority();
+        authority.setVehicle(vehicle);
+        authority.setRole(ApiContext.get().getUserRole());
+        authority.setUserId(ApiContext.get().getUserId());
+        authRepo.save(authority);
+
         return vehicle;
+    }
+
+    @Override
+    public List<Vehicle> searchVehicle(VehicleListRequestDTO request) {
+        QVehicleAuthority vAuth = QVehicleAuthority.vehicleAuthority;
+        QVehicle vehicle = QVehicle.vehicle;
+        JPAQuery<VehicleAuthority> query = new JPAQuery(entityManager);
+
+        JPAQuery<Vehicle> vQuery = query.select(vehicle)
+                .from(vAuth)
+                .innerJoin(vehicle).on(vAuth.vehicle.id.eq(vehicle.id))
+                .where(
+                        companyIdIs(ApiContext.get().getCompanyId())
+                                .and(vAuth.userId.eq(ApiContext.get().getUserId()))
+
+                );
+
+        if (StringUtils.isNotBlank(request.getTerm())) {
+            vQuery = vQuery.where(vehicle.tag.containsIgnoreCase(request.getTerm()));
+        }
+
+//        OrderSpecifier order = getOrder(vehicle, request.getSort());
+
+        List<Vehicle> vehicles = vQuery
+                .offset(request.getFrom())
+                .limit(request.getSize())
+                .fetch();
+
+
+        return vehicles;
     }
 
     @Override
@@ -38,21 +90,14 @@ public class VehicleServiceImpl implements VehicleService {
             storedVehicle.setNumberPlate(vehicle.getNumberPlate());
             storedVehicle.setTag(vehicle.getTag());
 
-            return vehicleRepository.save(storedVehicle);
+            return vehicleRepo.save(storedVehicle);
         }
         return null;
     }
 
     @Override
-    public List<Vehicle> getVehicles() {
-        List<Vehicle> vehicles = vehicleRepository
-                .findVehicleByCompanyIdAndIsDeletedFalse(ApiContext.get().getCompanyId());
-        return vehicles;
-    }
-
-    @Override
     public Vehicle getVehicleById(Long id) {
-        Vehicle vehicle = vehicleRepository
+        Vehicle vehicle = vehicleRepo
                 .findVehicleByIdAndCompanyIdAndIsDeletedFalse(id, ApiContext.get().getCompanyId());
         return vehicle;
     }
@@ -62,65 +107,63 @@ public class VehicleServiceImpl implements VehicleService {
         Vehicle vehicle = getVehicleById(id);
         if (vehicle != null) {
             vehicle.setIsDeleted(true);
-            vehicleRepository.save(vehicle);
+            vehicleRepo.save(vehicle);
         }
+
     }
 
     @Override
     public boolean existsPlateNumber(Long companyId, String plateNumber) {
-        Specification spec = Specification
+        QVehicle vehicle = QVehicle.vehicle;
+        JPAQuery<Vehicle> query = new JPAQuery(entityManager);
+        long vehicleCount = query.select(vehicle)
+                .from(vehicle)
                 .where(
-                        companyId(companyId)
-                                .and(isDeleted(false)
-                                        .and(plateNumber(plateNumber)))
-                );
-        return vehicleRepository.count(spec) > 0;
+                        companyIdIs(companyId)
+                                .and(plateNumberIs(plateNumber))
+                                .and(isDeleted(false))
+                )
+                .fetchCount();
+
+        return vehicleCount > 0;
     }
 
     @Override
     public boolean existsChassisNumber(Long companyId, String chassisNumber) {
-        Specification spec = Specification.where(
-                companyId(companyId)
-                        .and(isDeleted(false))
-                        .and(chassisNumber(chassisNumber))
-        );
-        return vehicleRepository.count(spec) > 0;
+        QVehicle vehicle = QVehicle.vehicle;
+        JPAQuery<Vehicle> query = new JPAQuery(entityManager);
+        long vehicleCount = query
+                .select(vehicle)
+                .from(vehicle)
+                .where(
+                        companyIdIs(companyId)
+                                .and(chassisNumberIs(chassisNumber))
+                                .and(isDeleted(false))
+                )
+                .fetchCount();
+
+        return vehicleCount > 0;
     }
 
-    public static Specification<Vehicle> isDeleted(boolean isDeleted) {
-        return new Specification<Vehicle>() {
-            @Override
-            public Predicate toPredicate(Root root, CriteriaQuery query, CriteriaBuilder criteriaBuilder) {
-                return criteriaBuilder.equal(root.get("isDeleted"), isDeleted);
-            }
-        };
+    private BooleanExpression companyIdIs(Long companyId) {
+        return QVehicle
+                .vehicle.companyId.eq(companyId);
     }
 
-    public static Specification<Vehicle> plateNumber(String plateNumber) {
-        return new Specification<Vehicle>() {
-            @Override
-            public Predicate toPredicate(Root root, CriteriaQuery query, CriteriaBuilder criteriaBuilder) {
-                return criteriaBuilder.equal(root.get("plateNumber"), plateNumber);
-            }
-        };
+    private BooleanExpression plateNumberIs(String plateNumber) {
+        return QVehicle
+                .vehicle.numberPlate.eq(plateNumber);
     }
 
-    public static Specification<Vehicle> companyId(Long companyId) {
-        return new Specification<Vehicle>() {
-            @Override
-            public Predicate toPredicate(Root root, CriteriaQuery query, CriteriaBuilder criteriaBuilder) {
-                return criteriaBuilder.equal(root.get("companyId"), companyId);
-            }
-        };
+    private BooleanExpression chassisNumberIs(String chassisNumber) {
+        return QVehicle
+                .vehicle.chassisNumber.eq(chassisNumber);
     }
 
-    public static Specification<Vehicle> chassisNumber(String chassisNumber) {
-        return new Specification<Vehicle>() {
-            @Override
-            public Predicate toPredicate(Root root, CriteriaQuery query, CriteriaBuilder criteriaBuilder) {
-                return criteriaBuilder.equal(root.get("chassisNumber"), chassisNumber);
-            }
-        };
+    private BooleanExpression isDeleted(boolean isDeleted) {
+        return QVehicle
+                .vehicle.isDeleted.eq(isDeleted);
     }
+
+
 }
-

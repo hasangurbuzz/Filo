@@ -4,6 +4,7 @@ import com.hasangurbuz.vehiclemanager.domain.Vehicle;
 import org.openapitools.model.VehicleDTO;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class VehicleMapper implements Mapper<Vehicle, VehicleDTO> {
         dto.setTag(entity.getTag());
         dto.setNumberPlate(entity.getNumberPlate());
         dto.setChassisNumber(entity.getChassisNumber());
+        dto.setCreationDate(entity.getCreationDate());
         return dto;
     }
 

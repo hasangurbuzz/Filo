@@ -5,29 +5,39 @@ info:
 servers:
   - url: http://localhost:8080/api
 paths:
-  /vehicle:
+  /vehicle/search:
     post:
       tags:
         - vehicle
-      summary: Get vehicles
-      operationId: vehicle_get
+      summary: Search vehicles
+      operationId: vehicle_search
       parameters:
         - $ref: "#/components/parameters/XUser"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleListRequest'
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Vehicle'
+                $ref: '#/components/schemas/VehicleListResponse'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /vehicle/{id}:
     post:
       tags:
         - vehicle
       summary: Get vehicle by id
+      operationId: vehicle_getById
       parameters:
         - $ref: "#/components/parameters/XUser"
         - in: path
@@ -42,6 +52,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Vehicle'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /vehicle/create:
     post:
@@ -64,8 +80,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Vehicle'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
-  /vehicle/update/{id}:
+  /vehicle/{id}/update:
     post:
       tags:
         - vehicle
@@ -91,12 +113,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Vehicle'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
-  /vehicle/delete/{id}:
+  /vehicle/{id}/delete:
     post:
       tags:
         - vehicle
       summary: Delete vehicle
+      operationId: vehicle_delete
       parameters:
         - $ref: "#/components/parameters/XUser"
         - in: path
@@ -108,6 +137,12 @@ paths:
       responses:
         '200':
           description: Success
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 components:
   parameters:
@@ -143,9 +178,9 @@ components:
     UserRole:
       type: string
       enum:
-        - CompanyAdmin
-        - Standard
-        -
+        - COMPANYADMIN
+        - STANDARD
+
     VehicleListRequest:
       type: object
       properties:
@@ -157,6 +192,8 @@ components:
           default: 20
         term:
           type: string
+        sort:
+          $ref: '#/components/schemas/Sort'
 
     VehicleListResponse:
       type: object
@@ -219,5 +256,25 @@ components:
           type: string
         modelYear:
           type: integer
+        creationDate:
+          type: string
+          format: date-time
+
+    Sort:
+      type: object
+      properties:
+        property:
+          type: string
+          default: CREATION_DATE
+          enum:
+            - CREATION_DATE
+        direction:
+          type: string
+          default: ASC
+          enum:
+            - ASC
+            - DESC
+
+
 
 

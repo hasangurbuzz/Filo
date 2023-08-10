@@ -9,6 +9,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "T_Vehicle")
@@ -43,4 +46,7 @@ public class Vehicle {
 
     @Column(name = "is_deleted")
     private Boolean isDeleted;
+
+    @Column(name = "creation_date", nullable = false)
+    private OffsetDateTime creationDate;
 }

@@ -3,6 +3,7 @@ package com.hasangurbuz.vehiclemanager.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hasangurbuz.vehiclemanager.api.ApiContext;
 import com.hasangurbuz.vehiclemanager.api.ApiExceptionCode;
+import com.hasangurbuz.vehiclemanager.domain.UserRole;
 import org.apache.http.entity.ContentType;
 import org.openapitools.model.ErrorDTO;
 import org.openapitools.model.XUserDTO;
@@ -45,7 +46,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
         ApiContext apiCtx = ApiContext.create();
 
         apiCtx.setUserId(user.getUserId());
-        apiCtx.setUserRole(user.getUserRole());
+        apiCtx.setUserRole(UserRole.valueOf(user.getUserRole().getValue()));
         apiCtx.setName(user.getName());
         apiCtx.setSurname(user.getSurname());
         apiCtx.setCompanyId(user.getCompanyId());
@@ -74,6 +75,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
             if (user.getUserRole() == null) {
                 return null;
             }
+
             return user;
         } catch (Exception e) {
             return null;

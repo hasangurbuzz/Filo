@@ -1,6 +1,7 @@
 package com.hasangurbuz.vehiclemanager.service;
 
 import com.hasangurbuz.vehiclemanager.domain.Vehicle;
+import org.openapitools.model.VehicleListRequestDTO;
 
 import java.util.List;
 
@@ -9,7 +10,7 @@ public interface VehicleService {
 
     Vehicle updateVehicle(Long id, Vehicle vehicle);
 
-    List<Vehicle> getVehicles();
+    List<Vehicle> searchVehicle(VehicleListRequestDTO request);
 
     Vehicle getVehicleById(Long id);
 

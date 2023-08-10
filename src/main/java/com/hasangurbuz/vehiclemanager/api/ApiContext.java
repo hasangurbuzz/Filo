@@ -13,7 +13,7 @@ public class ApiContext {
     private String surname;
     private Long companyId;
     private String companyName;
-    private UserRoleDTO userRole;
+    private UserRole userRole;
 
     private static final ThreadLocal<ApiContext> threadLocal = new InheritableThreadLocal<>();
 
