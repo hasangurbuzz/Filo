@@ -10,8 +10,6 @@ public interface VehicleService {
 
     Vehicle updateVehicle(Long id, Vehicle vehicle);
 
-    List<Vehicle> searchVehicle(VehicleListRequestDTO request);
-
     Vehicle getVehicleById(Long id);
 
     void deleteVehicle(Long id);

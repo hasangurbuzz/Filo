@@ -7,6 +7,7 @@ import com.hasangurbuz.vehiclemanager.domain.Vehicle;
 import com.hasangurbuz.vehiclemanager.domain.VehicleAuthority;
 import com.hasangurbuz.vehiclemanager.repository.VehicleAuthorityRepository;
 import com.hasangurbuz.vehiclemanager.repository.VehicleRepository;
+import com.hasangurbuz.vehiclemanager.service.PagedResults;
 import com.hasangurbuz.vehiclemanager.service.VehicleService;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -49,35 +50,7 @@ public class VehicleServiceImpl implements VehicleService {
         return vehicle;
     }
 
-    @Override
-    public List<Vehicle> searchVehicle(VehicleListRequestDTO request) {
-        QVehicleAuthority vAuth = QVehicleAuthority.vehicleAuthority;
-        QVehicle vehicle = QVehicle.vehicle;
-        JPAQuery<VehicleAuthority> query = new JPAQuery(entityManager);
 
-        JPAQuery<Vehicle> vQuery = query.select(vehicle)
-                .from(vAuth)
-                .innerJoin(vehicle).on(vAuth.vehicle.id.eq(vehicle.id))
-                .where(
-                        companyIdIs(ApiContext.get().getCompanyId())
-                                .and(vAuth.userId.eq(ApiContext.get().getUserId()))
-
-                );
-
-        if (StringUtils.isNotBlank(request.getTerm())) {
-            vQuery = vQuery.where(vehicle.tag.containsIgnoreCase(request.getTerm()));
-        }
-
-//        OrderSpecifier order = getOrder(vehicle, request.getSort());
-
-        List<Vehicle> vehicles = vQuery
-                .offset(request.getFrom())
-                .limit(request.getSize())
-                .fetch();
-
-
-        return vehicles;
-    }
 
     @Override
     public Vehicle updateVehicle(Long id, Vehicle vehicle) {
@@ -119,7 +92,7 @@ public class VehicleServiceImpl implements VehicleService {
         long vehicleCount = query.select(vehicle)
                 .from(vehicle)
                 .where(
-                        companyIdIs(companyId)
+                        vehicle.companyId.eq(companyId)
                                 .and(plateNumberIs(plateNumber))
                                 .and(isDeleted(false))
                 )
@@ -136,18 +109,13 @@ public class VehicleServiceImpl implements VehicleService {
                 .select(vehicle)
                 .from(vehicle)
                 .where(
-                        companyIdIs(companyId)
-                                .and(chassisNumberIs(chassisNumber))
-                                .and(isDeleted(false))
+                        vehicle.companyId.eq(companyId)
+                                .and(vehicle.chassisNumber.eq(chassisNumber))
+                                .and(vehicle.isDeleted.isFalse())
                 )
                 .fetchCount();
 
         return vehicleCount > 0;
-    }
-
-    private BooleanExpression companyIdIs(Long companyId) {
-        return QVehicle
-                .vehicle.companyId.eq(companyId);
     }
 
     private BooleanExpression plateNumberIs(String plateNumber) {

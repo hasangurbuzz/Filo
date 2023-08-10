@@ -6,6 +6,8 @@ import com.hasangurbuz.vehiclemanager.api.ApiException;
 import com.hasangurbuz.vehiclemanager.api.mapper.VehicleMapper;
 import com.hasangurbuz.vehiclemanager.domain.UserRole;
 import com.hasangurbuz.vehiclemanager.domain.Vehicle;
+import com.hasangurbuz.vehiclemanager.service.PagedResults;
+import com.hasangurbuz.vehiclemanager.service.VehicleAuthorityService;
 import com.hasangurbuz.vehiclemanager.service.VehicleService;
 import org.codehaus.plexus.util.StringUtils;
 import org.openapitools.api.VehicleApi;
@@ -28,6 +30,9 @@ public class VehicleApiController implements VehicleApi {
 
     @Autowired
     private VehicleService vehicleService;
+
+    @Autowired
+    private VehicleAuthorityService authorityService;
 
     @Autowired
     private VehicleMapper vehicleMapper;
@@ -100,13 +105,11 @@ public class VehicleApiController implements VehicleApi {
             vehicleListRequestDTO.getSort().setDirection(SortDTO.DirectionEnum.ASC);
         }
 
-        List<Vehicle> vehicles = vehicleService.searchVehicle(vehicleListRequestDTO);
-        List<VehicleDTO> vehicleDTOS = vehicleMapper.toDtoList(vehicles);
+        PagedResults<Vehicle> vehiclePagedResults = authorityService.search(vehicleListRequestDTO);
 
         VehicleListResponseDTO response = new VehicleListResponseDTO();
-        response.setItems(vehicleDTOS);
-        response.setTotal(vehicleDTOS.size());
-
+        response.setItems(vehicleMapper.toDtoList(vehiclePagedResults.getItems()));
+//        response.setTotal(vehiclePagedResults.getTotal());
         return ResponseEntity.ok(response);
     }
 
