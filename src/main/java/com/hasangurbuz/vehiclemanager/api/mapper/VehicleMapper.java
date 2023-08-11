@@ -3,6 +3,7 @@ package com.hasangurbuz.vehiclemanager.api.mapper;
 import com.hasangurbuz.vehiclemanager.api.ApiContext;
 import com.hasangurbuz.vehiclemanager.domain.UserRole;
 import com.hasangurbuz.vehiclemanager.domain.Vehicle;
+import org.openapitools.model.UserRoleDTO;
 import org.openapitools.model.VehicleActionAccessDTO;
 import org.openapitools.model.VehicleDTO;
 import org.springframework.stereotype.Component;
@@ -52,13 +53,21 @@ public class VehicleMapper implements Mapper<Vehicle, VehicleDTO> {
     @Override
     public List<VehicleDTO> toDtoList(List<Vehicle> entityList) {
         List<VehicleDTO> vehicleDtoList = new ArrayList<>(entityList.size());
-        if(entityList.isEmpty()){
+        if (entityList.isEmpty()) {
             return vehicleDtoList;
         }
         for (Vehicle vehicle : entityList) {
             vehicleDtoList.add(toDto(vehicle));
         }
         return vehicleDtoList;
+    }
+
+    public UserRoleDTO toUserRoleDto(UserRole userRole) {
+        return UserRoleDTO.valueOf(userRole.getValue());
+    }
+
+    public UserRole toUserRole(UserRoleDTO dto) {
+        return UserRole.valueOf(dto.getValue());
     }
 
 

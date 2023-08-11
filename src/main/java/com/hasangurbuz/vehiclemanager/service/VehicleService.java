@@ -7,8 +7,6 @@ public interface VehicleService {
 
     Vehicle update(Vehicle vehicle);
 
-    Vehicle getVehicleById(Long id);
-
     void delete(Vehicle vehicle);
 
     boolean existsPlateNumber(Long companyId, String plateNumber);

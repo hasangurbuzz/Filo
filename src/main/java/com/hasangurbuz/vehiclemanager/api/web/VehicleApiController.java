@@ -1,6 +1,5 @@
 package com.hasangurbuz.vehiclemanager.api.web;
 
-import com.hasangurbuz.vehiclemanager.api.ApiConstant;
 import com.hasangurbuz.vehiclemanager.api.ApiContext;
 import com.hasangurbuz.vehiclemanager.api.ApiException;
 import com.hasangurbuz.vehiclemanager.api.mapper.VehicleAuthorityMapper;
@@ -21,11 +20,16 @@ import org.openapitools.model.VehicleListResponseDTO;
 import org.openapitools.model.VehicleUpdateRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.List;
+
+import static com.hasangurbuz.vehiclemanager.api.ApiConstant.PAGE_LIMIT;
+import static com.hasangurbuz.vehiclemanager.api.ApiConstant.PAGE_OFFSET;
+import static com.hasangurbuz.vehiclemanager.api.ApiConstant.SORT_PROPERTY;
+import static org.openapitools.model.SortDTO.DirectionEnum.ASC;
 
 @RestController
 public class VehicleApiController implements VehicleApi {
@@ -82,7 +86,6 @@ public class VehicleApiController implements VehicleApi {
         vehicle.setChassisNumber(vehicleCreateRequestDTO.getChassisNumber());
         vehicle.setNumberPlate(vehicleCreateRequestDTO.getNumberPlate());
         vehicle.setCompanyId(ApiContext.get().getCompanyId());
-        vehicle.setCreationDate(OffsetDateTime.now());
 
         vehicle = vehicleService.create(vehicle);
 
@@ -97,27 +100,36 @@ public class VehicleApiController implements VehicleApi {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<VehicleListResponseDTO> search(VehicleListRequestDTO vehicleListRequestDTO) {
         if (vehicleListRequestDTO == null) {
             vehicleListRequestDTO = new VehicleListRequestDTO();
         }
         if (vehicleListRequestDTO.getFrom() == null) {
-            vehicleListRequestDTO.setFrom(ApiConstant.PAGE_OFFSET);
+            vehicleListRequestDTO.setFrom(PAGE_OFFSET);
         }
         if (vehicleListRequestDTO.getSize() == null) {
-            vehicleListRequestDTO.setSize(ApiConstant.PAGE_LIMIT);
+            vehicleListRequestDTO.setSize(PAGE_LIMIT);
         }
         if (vehicleListRequestDTO.getSort() == null) {
             vehicleListRequestDTO.setSort(new SortDTO());
         }
         if (vehicleListRequestDTO.getSort().getProperty() == null) {
-            vehicleListRequestDTO.getSort().setProperty(SortDTO.PropertyEnum.CREATION_DATE);
+            vehicleListRequestDTO.getSort().setProperty(SORT_PROPERTY);
         }
         if (vehicleListRequestDTO.getSort().getDirection() == null) {
-            vehicleListRequestDTO.getSort().setDirection(SortDTO.DirectionEnum.ASC);
+            vehicleListRequestDTO.getSort().setDirection(ASC);
         }
 
-        PagedResults<VehicleAuthority> vehiclePagedResults = vAuthService.search(vehicleListRequestDTO);
+
+        PagedResults<VehicleAuthority> vehiclePagedResults = vAuthService
+                .search(
+                        ApiContext.get().getCompanyId(),
+                        ApiContext.get().getUserId(),
+                        ApiContext.get().getUserRole(),
+                        vehicleListRequestDTO
+                );
+
         List<VehicleAuthority> vAuthorityList = vehiclePagedResults.getItems();
 
         VehicleListResponseDTO response = new VehicleListResponseDTO();
@@ -127,8 +139,14 @@ public class VehicleApiController implements VehicleApi {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<VehicleDTO> getById(Long id) {
-        VehicleAuthority vAuthority = vAuthService.getByVehicleId(id);
+        VehicleAuthority vAuthority = vAuthService
+                .getByVehicleId(id,
+                        ApiContext.get().getCompanyId(),
+                        ApiContext.get().getUserId(),
+                        ApiContext.get().getUserRole()
+                );
 
         if (vAuthority == null) {
             throw ApiException.notFound("Not found : " + id);
@@ -170,7 +188,11 @@ public class VehicleApiController implements VehicleApi {
         }
 
 
-        VehicleAuthority vAuthority = vAuthService.getByVehicleId(id);
+        VehicleAuthority vAuthority = vAuthService.getByVehicleId(id,
+                ApiContext.get().getCompanyId(),
+                ApiContext.get().getUserId(),
+                ApiContext.get().getUserRole()
+        );
 
         if (vAuthority == null) {
             throw ApiException.notFound("Not found : " + id);
@@ -196,7 +218,11 @@ public class VehicleApiController implements VehicleApi {
             throw ApiException.accessDenied();
         }
 
-        VehicleAuthority vAuthority = vAuthService.getByVehicleId(id);
+        VehicleAuthority vAuthority = vAuthService.getByVehicleId(id,
+                ApiContext.get().getCompanyId(),
+                ApiContext.get().getUserId(),
+                ApiContext.get().getUserRole()
+        );
 
         if (vAuthority == null) {
             throw ApiException.notFound("Not found id : " + id);

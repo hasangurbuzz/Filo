@@ -1,10 +1,7 @@
 package com.hasangurbuz.vehiclemanager.api.mapper;
 
-import com.hasangurbuz.vehiclemanager.api.ApiContext;
-import com.hasangurbuz.vehiclemanager.domain.UserRole;
 import com.hasangurbuz.vehiclemanager.domain.Vehicle;
 import com.hasangurbuz.vehiclemanager.domain.VehicleAuthority;
-import org.openapitools.model.VehicleActionAccessDTO;
 import org.openapitools.model.VehicleDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,7 +33,7 @@ public class VehicleAuthorityMapper implements Mapper<VehicleAuthority, VehicleD
     @Override
     public List<VehicleDTO> toDtoList(List<VehicleAuthority> entityList) {
         List<VehicleDTO> dtoList = new ArrayList<>();
-        if (entityList.isEmpty()){
+        if (entityList.isEmpty()) {
             return dtoList;
         }
 

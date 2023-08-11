@@ -30,5 +30,4 @@ public class ApiException extends RuntimeException {
         return ex;
     }
 
-
 }

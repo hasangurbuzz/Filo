@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.time.OffsetDateTime;
 
 
 @Entity
@@ -37,4 +38,8 @@ public class VehicleAuthority {
 
     @Column(name = "is_deleted")
     private boolean isDeleted;
+
+    @Column(name = "creation_date", nullable = false)
+    private OffsetDateTime creationDate;
+
 }
