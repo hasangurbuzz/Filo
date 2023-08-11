@@ -2,6 +2,7 @@ package com.hasangurbuz.vehiclemanager.api.web;
 
 import com.hasangurbuz.vehiclemanager.api.ApiContext;
 import com.hasangurbuz.vehiclemanager.api.ApiException;
+import com.hasangurbuz.vehiclemanager.api.ApiValidator;
 import com.hasangurbuz.vehiclemanager.api.mapper.VehicleAuthorityMapper;
 import com.hasangurbuz.vehiclemanager.api.mapper.VehicleMapper;
 import com.hasangurbuz.vehiclemanager.domain.UserRole;
@@ -12,6 +13,7 @@ import com.hasangurbuz.vehiclemanager.service.VehicleAuthorityService;
 import com.hasangurbuz.vehiclemanager.service.VehicleService;
 import org.codehaus.plexus.util.StringUtils;
 import org.openapitools.api.VehicleApi;
+import org.openapitools.model.PageRequestDTO;
 import org.openapitools.model.SortDTO;
 import org.openapitools.model.VehicleCreateRequestDTO;
 import org.openapitools.model.VehicleDTO;
@@ -23,7 +25,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 
 import static com.hasangurbuz.vehiclemanager.api.ApiConstant.PAGE_LIMIT;
@@ -70,6 +71,14 @@ public class VehicleApiController implements VehicleApi {
             throw ApiException.invalidInput("Model year required");
         }
 
+        if (!ApiValidator.isPlateNumberValid(vehicleCreateRequestDTO.getNumberPlate())) {
+            throw ApiException.invalidInput("Invalid plate number");
+        }
+
+        if (!ApiValidator.isChassisValid(vehicleCreateRequestDTO.getChassisNumber())) {
+            throw ApiException.invalidInput("Invalid chassis number");
+        }
+
         if (vehicleService.existsPlateNumber(ApiContext.get().getCompanyId(), vehicleCreateRequestDTO.getNumberPlate())) {
             throw ApiException.invalidInput("Plate number exists");
         }
@@ -102,64 +111,68 @@ public class VehicleApiController implements VehicleApi {
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<VehicleListResponseDTO> search(VehicleListRequestDTO vehicleListRequestDTO) {
+
         if (vehicleListRequestDTO == null) {
             vehicleListRequestDTO = new VehicleListRequestDTO();
         }
-        if (vehicleListRequestDTO.getFrom() == null) {
-            vehicleListRequestDTO.setFrom(PAGE_OFFSET);
+
+        PageRequestDTO pageRequest = vehicleListRequestDTO.getPageRequest();
+
+        if (pageRequest.getFrom() == null) {
+            pageRequest.setFrom(PAGE_OFFSET);
         }
-        if (vehicleListRequestDTO.getSize() == null) {
-            vehicleListRequestDTO.setSize(PAGE_LIMIT);
+        if (pageRequest.getSize() == null) {
+            pageRequest.setSize(PAGE_LIMIT);
         }
-        if (vehicleListRequestDTO.getSort() == null) {
-            vehicleListRequestDTO.setSort(new SortDTO());
+        if (pageRequest.getSort() == null) {
+            pageRequest.setSort(new SortDTO());
         }
-        if (vehicleListRequestDTO.getSort().getProperty() == null) {
-            vehicleListRequestDTO.getSort().setProperty(SORT_PROPERTY);
+        if (pageRequest.getSort().getProperty() == null) {
+            pageRequest.getSort().setProperty(SORT_PROPERTY);
         }
-        if (vehicleListRequestDTO.getSort().getDirection() == null) {
-            vehicleListRequestDTO.getSort().setDirection(ASC);
+        if (pageRequest.getSort().getDirection() == null) {
+            pageRequest.getSort().setDirection(ASC);
         }
 
-
-        PagedResults<VehicleAuthority> vehiclePagedResults = vAuthService
-                .search(
-                        ApiContext.get().getCompanyId(),
-                        ApiContext.get().getUserId(),
-                        ApiContext.get().getUserRole(),
-                        vehicleListRequestDTO
-                );
-
-        List<VehicleAuthority> vAuthorityList = vehiclePagedResults.getItems();
+        PagedResults<VehicleAuthority> results = vAuthService
+                .searchByUserId(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), pageRequest);
 
         VehicleListResponseDTO response = new VehicleListResponseDTO();
-        response.setItems(vAuthMapper.toDtoList(vAuthorityList));
-        response.setTotal(vehiclePagedResults.getTotal());
+        List<VehicleDTO> items = vAuthMapper.toDtoList(results.getItems());
+        response.setItems(items);
+        response.setTotal(results.getTotal());
+
         return ResponseEntity.ok(response);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<VehicleDTO> getById(Long id) {
-        VehicleAuthority vAuthority = vAuthService
-                .getByVehicleId(id,
-                        ApiContext.get().getCompanyId(),
-                        ApiContext.get().getUserId(),
-                        ApiContext.get().getUserRole()
-                );
 
-        if (vAuthority == null) {
+        VehicleAuthority currentUserAuth = vAuthService
+                .find(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), id);
+
+        if (currentUserAuth == null) {
             throw ApiException.notFound("Not found : " + id);
         }
 
-        VehicleDTO vehicle = vAuthMapper.toDto(vAuthority);
-        return ResponseEntity.ok(vehicle);
+        VehicleDTO response = vAuthMapper.toDto(currentUserAuth);
+
+        return ResponseEntity.ok(response);
     }
 
     @Override
     @Transactional
     public ResponseEntity<VehicleDTO> update(Long id, VehicleUpdateRequestDTO vehicleUpdateRequestDTO) {
-        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
+
+        VehicleAuthority currentUserAuth = vAuthService
+                .find(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), id);
+
+        if (currentUserAuth == null) {
+            throw ApiException.notFound("Not found : " + id);
+        }
+
+        if (currentUserAuth.getRole() != UserRole.COMPANY_ADMIN) {
             throw ApiException.accessDenied();
         }
 
@@ -179,26 +192,29 @@ public class VehicleApiController implements VehicleApi {
             throw ApiException.invalidInput("Model year required");
         }
 
-        if (vehicleService.existsPlateNumber(ApiContext.get().getCompanyId(), vehicleUpdateRequestDTO.getNumberPlate())) {
+        if (!ApiValidator.isPlateNumberValid(vehicleUpdateRequestDTO.getNumberPlate())) {
+            throw ApiException.invalidInput("Invalid plate number");
+        }
+
+        if (!ApiValidator.isChassisValid(vehicleUpdateRequestDTO.getChassisNumber())) {
+            throw ApiException.invalidInput("Invalid chassis number");
+        }
+
+        boolean plateNumberExists = vehicleService
+                .existsPlateNumber(ApiContext.get().getCompanyId(), vehicleUpdateRequestDTO.getNumberPlate());
+
+        if (plateNumberExists) {
             throw ApiException.invalidInput("Plate number exists");
         }
 
-        if (vehicleService.existsChassisNumber(ApiContext.get().getCompanyId(), vehicleUpdateRequestDTO.getChassisNumber())) {
+        boolean chassisNumberExists = vehicleService
+                .existsChassisNumber(ApiContext.get().getCompanyId(), vehicleUpdateRequestDTO.getChassisNumber());
+
+        if (chassisNumberExists) {
             throw ApiException.invalidInput("Chassis number exists");
         }
 
-
-        VehicleAuthority vAuthority = vAuthService.getByVehicleId(id,
-                ApiContext.get().getCompanyId(),
-                ApiContext.get().getUserId(),
-                ApiContext.get().getUserRole()
-        );
-
-        if (vAuthority == null) {
-            throw ApiException.notFound("Not found : " + id);
-        }
-
-        Vehicle vehicle = vAuthority.getVehicle();
+        Vehicle vehicle = currentUserAuth.getVehicle();
         vehicle.setBrand(vehicleUpdateRequestDTO.getBrand());
         vehicle.setTag(vehicleUpdateRequestDTO.getTag());
         vehicle.setNumberPlate(vehicleUpdateRequestDTO.getNumberPlate());
@@ -214,21 +230,19 @@ public class VehicleApiController implements VehicleApi {
     @Override
     @Transactional
     public ResponseEntity<Void> delete(Long id) {
-        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
+        VehicleAuthority currentUserAuth = vAuthService
+                .find(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), id);
+
+        if (currentUserAuth == null) {
+            throw ApiException.notFound("Not found : " + id);
+        }
+
+        if (currentUserAuth.getRole() != UserRole.COMPANY_ADMIN) {
             throw ApiException.accessDenied();
         }
 
-        VehicleAuthority vAuthority = vAuthService.getByVehicleId(id,
-                ApiContext.get().getCompanyId(),
-                ApiContext.get().getUserId(),
-                ApiContext.get().getUserRole()
-        );
+        vehicleService.delete(currentUserAuth.getVehicle());
 
-        if (vAuthority == null) {
-            throw ApiException.notFound("Not found id : " + id);
-        }
-
-        vehicleService.delete(vAuthority.getVehicle());
         return ResponseEntity.ok().build();
     }
 

@@ -1,24 +1,19 @@
 package com.hasangurbuz.vehiclemanager.service.impl;
 
-import com.hasangurbuz.vehiclemanager.domain.QVehicle;
 import com.hasangurbuz.vehiclemanager.domain.QVehicleAuthority;
-import com.hasangurbuz.vehiclemanager.domain.UserRole;
 import com.hasangurbuz.vehiclemanager.domain.VehicleAuthority;
 import com.hasangurbuz.vehiclemanager.repository.VehicleAuthorityRepository;
 import com.hasangurbuz.vehiclemanager.service.PagedResults;
 import com.hasangurbuz.vehiclemanager.service.VehicleAuthorityService;
 import com.querydsl.core.QueryResults;
-import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.apache.commons.lang3.StringUtils;
-import org.openapitools.model.VehicleListRequestDTO;
-import org.openapitools.model.VehicleUserListRequestDTO;
+import org.openapitools.model.PageRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Service
 public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
@@ -33,43 +28,6 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
     private SortHelper sortHelper;
 
     @Override
-    public PagedResults<VehicleAuthority> search(Long companyId, Long userId, UserRole userRole, VehicleListRequestDTO request) {
-        PagedResults<VehicleAuthority> pagedResults = new PagedResults<VehicleAuthority>();
-        QVehicleAuthority vehicleAuth = QVehicleAuthority.vehicleAuthority;
-        QVehicle vehicle = QVehicle.vehicle;
-
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
-        JPAQuery<VehicleAuthority> query = queryFactory
-                .selectFrom(vehicleAuth)
-                .where(
-                        vehicleAuth.vehicle.companyId.eq(companyId)
-                                .and(vehicleAuth.userId.eq(userId))
-                                .and(vehicleAuth.role.in(userRole, UserRole.STANDARD))
-                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
-                                .and(vehicleAuth.isDeleted.isFalse())
-
-                );
-
-
-        if (StringUtils.isNotBlank(request.getTerm())) {
-            query = query.where(vehicleAuth.vehicle.tag.containsIgnoreCase(request.getTerm()));
-        }
-
-        QueryResults<VehicleAuthority> results = query
-                .orderBy(sortHelper.getVehicleOrder(request.getSort()))
-                .offset(request.getFrom())
-                .limit(request.getSize())
-                .fetchResults();
-
-        pagedResults.setItems(results.getResults());
-        pagedResults.setTotal(results.getTotal());
-
-        return pagedResults;
-    }
-
-
-    @Override
     public VehicleAuthority create(VehicleAuthority vehicleAuthority) {
         vehicleAuthority.setDeleted(false);
         vehicleAuthority.setCreationDate(OffsetDateTime.now());
@@ -78,114 +36,18 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
     }
 
     @Override
-    public VehicleAuthority getByVehicleId(Long vehicleId, Long companyId, Long userId, UserRole userRole) {
+    public VehicleAuthority find(Long companyId, Long userId, Long vehicleId) {
         QVehicleAuthority vehicleAuth = QVehicleAuthority.vehicleAuthority;
-        QVehicle vehicle = QVehicle.vehicle;
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
-        VehicleAuthority authority = queryFactory
+        VehicleAuthority vAuthority = queryFactory
                 .selectFrom(vehicleAuth)
                 .where(
-                        vehicleAuth.isDeleted.isFalse()
-                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
-                                .and(vehicleAuth.role.in(userRole, UserRole.STANDARD))
-                                .and(vehicleAuth.vehicle.id.eq(vehicleId))
+                        vehicleAuth.vehicle.companyId.eq(companyId)
                                 .and(vehicleAuth.userId.eq(userId))
-                                .and(vehicleAuth.vehicle.companyId.eq(companyId))
-                ).fetchOne();
-
-        return authority;
-    }
-
-    @Override
-    public void delete(VehicleAuthority vehicleAuthority) {
-        vehicleAuthority.setDeleted(true);
-        vAuthRepo.save(vehicleAuthority);
-    }
-
-    @Override
-    public PagedResults<VehicleAuthority> searchUser(Long vehicleId, Long companyId, Long userId, UserRole userRole, VehicleUserListRequestDTO request) {
-        PagedResults<VehicleAuthority> vAuthorityPaged = new PagedResults<>();
-        QVehicleAuthority vehicleAuth = QVehicleAuthority.vehicleAuthority;
-        QVehicle vehicle = QVehicle.vehicle;
-        JPAQuery<VehicleAuthority> queryFactory = new JPAQuery<VehicleAuthority>(entityManager);
-
-
-        List<Long> vehicleIds = queryFactory
-                .select(vehicleAuth.vehicle.id)
-                .from(vehicleAuth)
-                .where(
-                        vehicleAuth.userId.eq(userId)
                                 .and(vehicleAuth.vehicle.id.eq(vehicleId))
-                                .and(vehicleAuth.vehicle.companyId.eq(companyId))
+                                .and(vehicleAuth.isDeleted.isFalse())
                                 .and(vehicleAuth.vehicle.isDeleted.isFalse())
-                                .and(vehicleAuth.isDeleted.isFalse())
-                                .and(vehicleAuth.role.in(userRole, UserRole.STANDARD))
-
-
-                )
-                .fetch();
-
-        if (vehicleIds.isEmpty()) {
-            return vAuthorityPaged;
-        }
-
-        JPAQuery<VehicleAuthority> query = new JPAQueryFactory(entityManager)
-                .selectFrom(vehicleAuth)
-                .where(
-                        vehicleAuth.vehicle.id.in(vehicleIds)
-                                .and(vehicleAuth.isDeleted.isFalse())
-
-                );
-
-        if (request.getUserRole() != null) {
-            query = query.where(vehicleAuth.role.eq(UserRole.valueOf(request.getUserRole().getValue())));
-        }
-
-        QueryResults<VehicleAuthority> results = query
-                .offset(request.getFrom())
-                .limit(request.getSize())
-                .fetchResults();
-
-        vAuthorityPaged.setTotal(results.getTotal());
-        vAuthorityPaged.setItems(results.getResults());
-
-        return vAuthorityPaged;
-    }
-
-    @Override
-    public VehicleAuthority getByVehicleAndUserId(Long vehicleId, Long companyId, Long userId, UserRole userRole, Long requestedUserId) {
-        QVehicleAuthority vehicleAuth = QVehicleAuthority.vehicleAuthority;
-        QVehicle vehicle = QVehicle.vehicle;
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-        VehicleAuthority vAuthority = null;
-
-        Long aVehicleId = queryFactory
-                .select(vehicleAuth.vehicle.id)
-                .from(vehicleAuth)
-                .where(
-                        vehicleAuth.userId.eq(userId)
-                                .and(vehicleAuth.vehicle.id.eq(vehicleId))
-                                .and(vehicleAuth.vehicle.companyId.eq(companyId))
-                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
-                                .and(vehicleAuth.isDeleted.isFalse())
-                                .and(vehicleAuth.role.in(userRole, UserRole.STANDARD))
-
-
-                )
-                .fetchOne();
-
-        if (aVehicleId == null) {
-            return vAuthority;
-        }
-
-        vAuthority = new JPAQueryFactory(entityManager)
-                .selectFrom(vehicleAuth)
-                .where(
-                        vehicleAuth.vehicle.id.eq(aVehicleId)
-                                .and(vehicleAuth.isDeleted.isFalse())
-                                .and(vehicleAuth.userId.eq(requestedUserId))
-
                 ).fetchOne();
 
         return vAuthority;
@@ -197,29 +59,54 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
     }
 
     @Override
-    public void deleteUser(VehicleAuthority vehicleAuthority) {
-        vehicleAuthority.setDeleted(true);
-        vAuthRepo.save(vehicleAuthority);
+    public PagedResults<VehicleAuthority> searchByUserId(Long companyId, Long userId, PageRequestDTO pageRequest) {
+        QVehicleAuthority vehicleAuth = QVehicleAuthority.vehicleAuthority;
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        PagedResults<VehicleAuthority> pagedResults = new PagedResults<>();
+        OrderSpecifier order = sortHelper.getVehicleAuthorityOrder(pageRequest.getSort());
+
+        QueryResults<VehicleAuthority> results = queryFactory.selectFrom(vehicleAuth)
+                .where(
+                        vehicleAuth.userId.eq(userId)
+                                .and(vehicleAuth.vehicle.companyId.eq(companyId))
+                                .and(vehicleAuth.isDeleted.isFalse())
+                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
+                ).offset(pageRequest.getFrom())
+                .limit(pageRequest.getSize())
+                .orderBy(order)
+                .fetchResults();
+
+        pagedResults.setItems(results.getResults());
+        pagedResults.setTotal(results.getTotal());
+        return pagedResults;
     }
 
     @Override
-    public VehicleAuthority exists(Long vehicleId, Long companyId, Long userId) {
+    public PagedResults<VehicleAuthority> searchByVehicleId(Long companyId, Long vehicleId, PageRequestDTO pageRequest) {
         QVehicleAuthority vehicleAuth = QVehicleAuthority.vehicleAuthority;
-        QVehicle vehicle = QVehicle.vehicle;
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        PagedResults<VehicleAuthority> pagedResults = new PagedResults<>();
+        OrderSpecifier order = sortHelper.getVehicleAuthorityOrder(pageRequest.getSort());
 
-        VehicleAuthority vAuthority = queryFactory.selectFrom(vehicleAuth)
+        QueryResults<VehicleAuthority> results = queryFactory
+                .selectFrom(vehicleAuth)
                 .where(
-                        vehicleAuth.isDeleted.isFalse()
-                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
+                        vehicleAuth.vehicle.companyId.eq(companyId)
                                 .and(vehicleAuth.vehicle.id.eq(vehicleId))
-                                .and(vehicleAuth.userId.eq(userId))
-                                .and(vehicle.companyId.eq(companyId))
-                )
-                .fetchOne();
+                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
+                                .and(vehicleAuth.isDeleted.isFalse())
+                ).fetchResults();
 
-        return vAuthority;
+        pagedResults.setTotal(results.getTotal());
+        pagedResults.setItems(results.getResults());
+        return pagedResults;
     }
 
+
+    @Override
+    public void delete(VehicleAuthority vehicleAuthority) {
+        vehicleAuthority.setDeleted(true);
+        vAuthRepo.save(vehicleAuthority);
+    }
 
 }

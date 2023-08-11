@@ -10,6 +10,7 @@ import com.hasangurbuz.vehiclemanager.domain.VehicleAuthority;
 import com.hasangurbuz.vehiclemanager.service.PagedResults;
 import com.hasangurbuz.vehiclemanager.service.VehicleAuthorityService;
 import org.openapitools.api.VehicleUsersApi;
+import org.openapitools.model.PageRequestDTO;
 import org.openapitools.model.SortDTO;
 import org.openapitools.model.VehicleUserDTO;
 import org.openapitools.model.VehicleUserListRequestDTO;
@@ -47,7 +48,14 @@ public class VehicleUsersApiController implements VehicleUsersApi {
     @Transactional
     public ResponseEntity<VehicleUserDTO> createUser(Long id, VehicleUserDTO vehicleUserDTO) {
 
-        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
+        VehicleAuthority currentUserAuth = vAuthService
+                .find(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), id);
+
+        if (currentUserAuth == null) {
+            throw ApiException.notFound("Not found : " + id);
+        }
+
+        if (currentUserAuth.getRole() != UserRole.COMPANY_ADMIN) {
             throw ApiException.accessDenied();
         }
 
@@ -59,50 +67,43 @@ public class VehicleUsersApiController implements VehicleUsersApi {
             throw ApiException.invalidInput("User role required");
         }
 
-        VehicleAuthority vAuthority = vAuthService.exists(id,
-                ApiContext.get().getCompanyId(),
-                vehicleUserDTO.getId()
-        );
+        VehicleAuthority foundVAuthority = vAuthService
+                .find(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), id);
 
-        if (vAuthority != null) {
+        if (foundVAuthority == null) {
+            throw ApiException.notFound("Not found : " + id);
+        }
+
+        VehicleAuthority userVAuthority = vAuthService
+                .find(ApiContext.get().getCompanyId(), vehicleUserDTO.getId(), id);
+
+        if (userVAuthority != null) {
             throw ApiException.invalidInput("User exists");
         }
 
-        vAuthority = vAuthService
-                .getByVehicleId(id,
-                        ApiContext.get().getCompanyId(),
-                        ApiContext.get().getUserId(),
-                        ApiContext.get().getUserRole()
-                );
+        userVAuthority.setVehicle(foundVAuthority.getVehicle());
+        userVAuthority.setUserId(vehicleUserDTO.getId());
+        userVAuthority.setRole(vehicleMapper.toUserRole(vehicleUserDTO.getRole()));
 
-        if (vAuthority == null) {
-            throw ApiException.notFound("Not found id : " + id);
-        }
+        userVAuthority = vAuthService.create(userVAuthority);
 
-        // inputlardaki değerlere sahip ama isDeleted = true olduğu için
-        // serviceden gelmeyen vehicle-user'ların kontrolü yapılacak mı
+        VehicleUserDTO response = vUserMapper.toDto(userVAuthority);
 
-        VehicleAuthority newVAuthority = new VehicleAuthority();
-
-        newVAuthority.setUserId(vehicleUserDTO.getId());
-        newVAuthority.setVehicle(vAuthority.getVehicle());
-        newVAuthority.setRole(vehicleMapper.toUserRole(vehicleUserDTO.getRole()));
-
-        newVAuthority = vAuthService.create(newVAuthority);
-
-        VehicleUserDTO vehicleUser = new VehicleUserDTO();
-        vehicleUser.setId(newVAuthority.getUserId());
-        vehicleUser.setRole(vehicleMapper.toUserRoleDto(newVAuthority.getRole()));
-
-        return ResponseEntity.ok(vehicleUser);
-
+        return ResponseEntity.ok(response);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<VehicleUserDTO> getUser(Long id, Long userId) {
 
-        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
+        VehicleAuthority currentUserAuth = vAuthService
+                .find(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), id);
+
+        if (currentUserAuth == null) {
+            throw ApiException.notFound("Not found : " + id);
+        }
+
+        if (currentUserAuth.getRole() != UserRole.COMPANY_ADMIN) {
             throw ApiException.accessDenied();
         }
 
@@ -114,66 +115,67 @@ public class VehicleUsersApiController implements VehicleUsersApi {
             throw ApiException.invalidInput("User id required");
         }
 
-        VehicleAuthority vAuthority = vAuthService
-                .getByVehicleAndUserId(
-                        id,
-                        ApiContext.get().getCompanyId(),
-                        ApiContext.get().getUserId(),
-                        ApiContext.get().getUserRole(),
-                        userId);
+        VehicleAuthority userVAuthority = vAuthService
+                .find(ApiContext.get().getCompanyId(), userId, id);
 
-        if (vAuthority == null) {
-            throw ApiException
-                    .invalidInput("User : "
-                            + userId
-                            + " not found on vehicle : "
-                            + id
-                    );
+        if (userVAuthority == null) {
+            throw ApiException.notFound("Not found : " + id);
         }
 
-        return ResponseEntity.ok(vUserMapper.toDto(vAuthority));
+        VehicleUserDTO response = vUserMapper.toDto(userVAuthority);
+
+        return ResponseEntity.ok(response);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<VehicleUserListResponseDTO> searchUser(Long id, VehicleUserListRequestDTO vehicleUserListRequestDTO) {
-        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
+
+        VehicleAuthority currentUserAuth = vAuthService
+                .find(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), id);
+
+        if (currentUserAuth == null) {
+            throw ApiException.notFound("Not found : " + id);
+        }
+
+        if (currentUserAuth.getRole() != UserRole.COMPANY_ADMIN) {
             throw ApiException.accessDenied();
         }
 
         if (vehicleUserListRequestDTO == null) {
             vehicleUserListRequestDTO = new VehicleUserListRequestDTO();
         }
-        if (vehicleUserListRequestDTO.getFrom() == null) {
-            vehicleUserListRequestDTO.setFrom(PAGE_OFFSET);
-        }
-        if (vehicleUserListRequestDTO.getSize() == null) {
-            vehicleUserListRequestDTO.setSize(PAGE_LIMIT);
-        }
-        if (vehicleUserListRequestDTO.getSort() == null) {
-            vehicleUserListRequestDTO.setSort(new SortDTO());
-        }
-        if (vehicleUserListRequestDTO.getSort().getProperty() == null) {
-            vehicleUserListRequestDTO.getSort().setProperty(SORT_PROPERTY);
-        }
-        if (vehicleUserListRequestDTO.getSort().getDirection() == null) {
-            vehicleUserListRequestDTO.getSort().setDirection(ASC);
+
+        PageRequestDTO pageRequest = vehicleUserListRequestDTO.getPageRequest();
+
+        if (pageRequest.getFrom() == null) {
+            pageRequest.setFrom(PAGE_OFFSET);
         }
 
-        PagedResults<VehicleAuthority> vehiclePagedResults = vAuthService
-                .searchUser(
-                        id,
-                        ApiContext.get().getCompanyId(),
-                        ApiContext.get().getUserId(),
-                        ApiContext.get().getUserRole(),
-                        vehicleUserListRequestDTO
-                );
+        if (pageRequest.getSize() == null) {
+            pageRequest.setSize(PAGE_LIMIT);
+        }
 
-        List<VehicleUserDTO> users = vUserMapper.toDtoList(vehiclePagedResults.getItems());
+        if (pageRequest.getSort() == null) {
+            pageRequest.setSort(new SortDTO());
+        }
+
+        if (pageRequest.getSort().getProperty() == null) {
+            pageRequest.getSort().setProperty(SORT_PROPERTY);
+        }
+
+        if (pageRequest.getSort().getDirection() == null) {
+            pageRequest.getSort().setDirection(ASC);
+        }
+
+        PagedResults<VehicleAuthority> results = vAuthService
+                .searchByVehicleId(ApiContext.get().getCompanyId(), id, pageRequest);
+
+        List<VehicleUserDTO> resultItems = vUserMapper.toDtoList(results.getItems());
 
         VehicleUserListResponseDTO response = new VehicleUserListResponseDTO();
-        response.setTotal(vehiclePagedResults.getTotal());
-        response.setItems(users);
+        response.setItems(resultItems);
+        response.setTotal(results.getTotal());
 
         return ResponseEntity.ok(response);
     }
@@ -182,7 +184,15 @@ public class VehicleUsersApiController implements VehicleUsersApi {
     @Override
     @Transactional
     public ResponseEntity<VehicleUserDTO> updateUser(Long id, Long userId, VehicleUserUpdateRequestDTO vehicleUserUpdateRequestDTO) {
-        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
+
+        VehicleAuthority currentUserAuth = vAuthService
+                .find(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), id);
+
+        if (currentUserAuth == null) {
+            throw ApiException.notFound("Not found : " + id);
+        }
+
+        if (currentUserAuth.getRole() != UserRole.COMPANY_ADMIN) {
             throw ApiException.accessDenied();
         }
 
@@ -190,56 +200,59 @@ public class VehicleUsersApiController implements VehicleUsersApi {
             throw ApiException.invalidInput("User role required");
         }
 
-        VehicleAuthority vAuthority = vAuthService
-                .getByVehicleAndUserId(id,
-                        ApiContext.get().getCompanyId(),
-                        ApiContext.get().getUserId(),
-                        ApiContext.get().getUserRole(),
-                        userId);
+        VehicleAuthority userVAuthority = vAuthService
+                .find(ApiContext.get().getCompanyId(), userId, id);
 
-        if (vAuthority == null) {
-            throw ApiException.notFound("Not found user : " + userId + " on : " + id);
+        if (userVAuthority == null) {
+            throw ApiException.notFound("Not found : " + userId);
         }
 
-        UserRole role = vehicleMapper.toUserRole(vehicleUserUpdateRequestDTO.getUserRole());
-        vAuthority.setRole(role);
+        userVAuthority.setRole(vehicleMapper.toUserRole(vehicleUserUpdateRequestDTO.getUserRole()));
 
-        vAuthority = vAuthService.update(vAuthority);
+        userVAuthority = vAuthService.update(userVAuthority);
 
-        VehicleUserDTO user = vUserMapper.toDto(vAuthority);
+        VehicleUserDTO response = vUserMapper.toDto(userVAuthority);
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(response);
     }
 
     @Override
     @Transactional
     public ResponseEntity<Void> deleteUser(Long id, Long userId) {
 
-        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
+        VehicleAuthority currentUserAuth = vAuthService
+                .find(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), id);
+
+        if (currentUserAuth == null) {
+            throw ApiException.notFound("Not found : " + id);
+        }
+
+        if (currentUserAuth.getRole() != UserRole.COMPANY_ADMIN) {
+            throw ApiException.accessDenied();
+        }
+
+        if (currentUserAuth.getUserId() == userId) {
             throw ApiException.accessDenied();
         }
 
         if (id == null) {
             throw ApiException.invalidInput("Id required");
         }
+
         if (userId == null) {
             throw ApiException.invalidInput("User id required");
         }
 
-        VehicleAuthority vAuthority = vAuthService
-                .getByVehicleAndUserId(id,
-                        ApiContext.get().getCompanyId(),
-                        ApiContext.get().getUserId(),
-                        ApiContext.get().getUserRole(),
-                        userId);
+        VehicleAuthority userVAuthority = vAuthService
+                .find(ApiContext.get().getCompanyId(), userId, id);
 
-        if (vAuthority == null) {
-            throw ApiException.notFound("Not found user : " + userId + " on : " + id);
+        if (userVAuthority == null) {
+            throw ApiException.notFound("Not found : " + userId);
         }
 
-        vAuthService.deleteUser(vAuthority);
+
+        vAuthService.delete(userVAuthority);
 
         return ResponseEntity.ok().build();
-
     }
 }

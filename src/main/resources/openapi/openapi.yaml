@@ -363,8 +363,8 @@ components:
       properties:
         term:
           type: string
-      allOf:
-        - $ref: '#/components/schemas/PageRequest'
+        pageRequest:
+          $ref: '#/components/schemas/PageRequest'
 
 
     VehicleListResponse:
@@ -506,8 +506,8 @@ components:
       properties:
         userRole:
           $ref: '#/components/schemas/UserRole'
-      allOf:
-        - $ref: '#/components/schemas/PageRequest'
+        pageRequest:
+          $ref: '#/components/schemas/PageRequest'
 
     VehicleUserListResponse:
       type: object
