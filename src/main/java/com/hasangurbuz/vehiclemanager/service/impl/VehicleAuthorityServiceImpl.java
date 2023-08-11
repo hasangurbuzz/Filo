@@ -158,17 +158,34 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
         QVehicleAuthority vehicleAuth = QVehicleAuthority.vehicleAuthority;
         QVehicle vehicle = QVehicle.vehicle;
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        VehicleAuthority vAuthority = null;
 
-        VehicleAuthority vAuthority = queryFactory
-                .selectFrom(vehicleAuth)
+        Long aVehicleId = queryFactory
+                .select(vehicleAuth.vehicle.id)
+                .from(vehicleAuth)
                 .where(
                         vehicleAuth.userId.eq(userId)
-                                .and(vehicleAuth.userId.eq(requestedUserId))
                                 .and(vehicleAuth.vehicle.id.eq(vehicleId))
                                 .and(vehicleAuth.vehicle.companyId.eq(companyId))
-                                .and(vehicleAuth.role.in(userRole, UserRole.STANDARD))
-                                .and(vehicleAuth.isDeleted.isFalse())
                                 .and(vehicleAuth.vehicle.isDeleted.isFalse())
+                                .and(vehicleAuth.isDeleted.isFalse())
+                                .and(vehicleAuth.role.in(userRole, UserRole.STANDARD))
+
+
+                )
+                .fetchOne();
+
+        if (aVehicleId == null) {
+            return vAuthority;
+        }
+
+        vAuthority = new JPAQueryFactory(entityManager)
+                .selectFrom(vehicleAuth)
+                .where(
+                        vehicleAuth.vehicle.id.eq(aVehicleId)
+                                .and(vehicleAuth.isDeleted.isFalse())
+                                .and(vehicleAuth.userId.eq(requestedUserId))
+
                 ).fetchOne();
 
         return vAuthority;

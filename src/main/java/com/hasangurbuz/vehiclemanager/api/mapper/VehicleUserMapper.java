@@ -4,6 +4,7 @@ import com.hasangurbuz.vehiclemanager.domain.VehicleAuthority;
 import org.openapitools.model.VehicleUserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,10 +34,10 @@ public class VehicleUserMapper implements Mapper<VehicleAuthority, VehicleUserDT
 
     @Override
     public List<VehicleUserDTO> toDtoList(List<VehicleAuthority> entityList) {
-        List<VehicleUserDTO> vehicleUserDtoList = new ArrayList<>(entityList.size());
-        if (entityList.isEmpty()) {
-            return vehicleUserDtoList;
+        if (CollectionUtils.isEmpty(entityList)) {
+            return null;
         }
+        List<VehicleUserDTO> vehicleUserDtoList = new ArrayList<>(entityList.size());
         for (VehicleAuthority vAuthority : entityList) {
             vehicleUserDtoList.add(toDto(vAuthority));
         }

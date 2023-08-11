@@ -125,9 +125,9 @@ public class VehicleUsersApiController implements VehicleUsersApi {
         if (vAuthority == null) {
             throw ApiException
                     .invalidInput("User : "
-                            + vAuthority.getUserId()
-                            + " exists on vehicle : "
-                            + vAuthority.getVehicle().getId()
+                            + userId
+                            + " not found on vehicle : "
+                            + id
                     );
         }
 
