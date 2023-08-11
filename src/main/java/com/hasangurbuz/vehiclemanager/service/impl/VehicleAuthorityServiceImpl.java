@@ -8,6 +8,7 @@ import com.hasangurbuz.vehiclemanager.repository.VehicleAuthorityRepository;
 import com.hasangurbuz.vehiclemanager.service.PagedResults;
 import com.hasangurbuz.vehiclemanager.service.VehicleAuthorityService;
 import com.querydsl.core.QueryResults;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Service
 public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
@@ -108,20 +110,43 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
         PagedResults<VehicleAuthority> vAuthorityPaged = new PagedResults<>();
         QVehicleAuthority vehicleAuth = QVehicleAuthority.vehicleAuthority;
         QVehicle vehicle = QVehicle.vehicle;
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        JPAQuery<VehicleAuthority> queryFactory = new JPAQuery<VehicleAuthority>(entityManager);
 
 
-        // dto düzenlenip dto.userId eklenecek
-        JPAQuery<VehicleAuthority> query = queryFactory.selectFrom(vehicleAuth)
-                .where(
-                        vehicleAuth.vehicle.companyId.eq(companyId)
-                                .and(vehicleAuth.userId.eq(userId))
-                                .and(vehicleAuth.role.in(userRole, UserRole.STANDARD))
-                                .and(vehicleAuth.isDeleted.isFalse())
-                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
-                                .and(vehicleAuth.vehicle.id.eq(vehicleId))
+        // select vauth from vauth
+        // where userId == userId
 
-                );
+
+        // id, user_id, vehicle_id, is_deleted
+        // id, name
+
+        JPAQuery<VehicleAuthority> query = queryFactory
+                .select(vehicleAuth)
+                .from(vehicleAuth)
+                .where(vehicleAuth.vehicle.id.in(
+                        JPAExpressions.select(vehicleAuth.vehicle.id)
+                                .from(vehicleAuth)
+                                .where(
+                                        vehicleAuth.userId.eq(userId)
+                                                .and(vehicleAuth.role.in(userRole, UserRole.STANDARD))
+                                                .and(vehicleAuth.isDeleted.isFalse())
+                                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
+                                                .and(vehicleAuth.vehicle.id.eq(vehicleId))
+
+                                )
+                                .groupBy(vehicleAuth.userId)
+                ));
+//
+//        JPAQuery<VehicleAuthority> query = queryFactory.selectFrom(vehicleAuth)
+//                .where(
+//                        vehicleAuth.vehicle.companyId.eq(companyId)
+//                                .and(vehicleAuth.userId.eq(userId))
+//                                .and(vehicleAuth.role.in(userRole, UserRole.STANDARD))
+//                                .and(vehicleAuth.isDeleted.isFalse())
+//                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
+//                                .and(vehicleAuth.vehicle.id.eq(vehicleId))
+//
+//                );
         if (userRole != null) {
             query = query.where(vehicleAuth.role.eq(userRole));
         }
