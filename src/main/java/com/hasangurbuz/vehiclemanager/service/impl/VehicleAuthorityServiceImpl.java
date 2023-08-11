@@ -42,13 +42,12 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
 
         VehicleAuthority vAuthority = queryFactory
                 .selectFrom(vehicleAuth)
-                .where(
-                        vehicleAuth.vehicle.companyId.eq(companyId)
-                                .and(vehicleAuth.userId.eq(userId))
-                                .and(vehicleAuth.vehicle.id.eq(vehicleId))
-                                .and(vehicleAuth.isDeleted.isFalse())
-                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
-                ).fetchOne();
+                .where(vehicleAuth.vehicle.companyId.eq(companyId)
+                        .and(vehicleAuth.userId.eq(userId))
+                        .and(vehicleAuth.vehicle.id.eq(vehicleId))
+                        .and(vehicleAuth.isDeleted.isFalse())
+                        .and(vehicleAuth.vehicle.isDeleted.isFalse()))
+                .fetchOne();
 
         return vAuthority;
     }
@@ -65,13 +64,13 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
         PagedResults<VehicleAuthority> pagedResults = new PagedResults<>();
         OrderSpecifier order = sortHelper.getVehicleAuthorityOrder(pageRequest.getSort());
 
-        QueryResults<VehicleAuthority> results = queryFactory.selectFrom(vehicleAuth)
-                .where(
-                        vehicleAuth.userId.eq(userId)
-                                .and(vehicleAuth.vehicle.companyId.eq(companyId))
-                                .and(vehicleAuth.isDeleted.isFalse())
-                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
-                ).offset(pageRequest.getFrom())
+        QueryResults<VehicleAuthority> results = queryFactory
+                .selectFrom(vehicleAuth)
+                .where(vehicleAuth.userId.eq(userId)
+                        .and(vehicleAuth.vehicle.companyId.eq(companyId))
+                        .and(vehicleAuth.isDeleted.isFalse())
+                        .and(vehicleAuth.vehicle.isDeleted.isFalse()))
+                .offset(pageRequest.getFrom())
                 .limit(pageRequest.getSize())
                 .orderBy(order)
                 .fetchResults();
@@ -82,7 +81,9 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
     }
 
     @Override
-    public PagedResults<VehicleAuthority> searchByVehicleId(Long companyId, Long vehicleId, PageRequestDTO pageRequest) {
+    public PagedResults<VehicleAuthority> searchByVehicleId(
+            Long companyId, Long vehicleId, PageRequestDTO pageRequest
+    ) {
         QVehicleAuthority vehicleAuth = QVehicleAuthority.vehicleAuthority;
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         PagedResults<VehicleAuthority> pagedResults = new PagedResults<>();
@@ -90,12 +91,11 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
 
         QueryResults<VehicleAuthority> results = queryFactory
                 .selectFrom(vehicleAuth)
-                .where(
-                        vehicleAuth.vehicle.companyId.eq(companyId)
-                                .and(vehicleAuth.vehicle.id.eq(vehicleId))
-                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
-                                .and(vehicleAuth.isDeleted.isFalse())
-                ).offset(pageRequest.getFrom())
+                .where(vehicleAuth.vehicle.companyId.eq(companyId)
+                        .and(vehicleAuth.vehicle.id.eq(vehicleId))
+                        .and(vehicleAuth.vehicle.isDeleted.isFalse())
+                        .and(vehicleAuth.isDeleted.isFalse()))
+                .offset(pageRequest.getFrom())
                 .limit(pageRequest.getSize())
                 .orderBy(order)
                 .fetchResults();

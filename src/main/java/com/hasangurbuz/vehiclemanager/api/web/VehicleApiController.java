@@ -13,13 +13,7 @@ import com.hasangurbuz.vehiclemanager.service.VehicleAuthorityService;
 import com.hasangurbuz.vehiclemanager.service.VehicleService;
 import org.codehaus.plexus.util.StringUtils;
 import org.openapitools.api.VehicleApi;
-import org.openapitools.model.PageRequestDTO;
-import org.openapitools.model.SortDTO;
-import org.openapitools.model.VehicleCreateRequestDTO;
-import org.openapitools.model.VehicleDTO;
-import org.openapitools.model.VehicleListRequestDTO;
-import org.openapitools.model.VehicleListResponseDTO;
-import org.openapitools.model.VehicleUpdateRequestDTO;
+import org.openapitools.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,10 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static com.hasangurbuz.vehiclemanager.api.ApiConstant.PAGE_LIMIT;
-import static com.hasangurbuz.vehiclemanager.api.ApiConstant.PAGE_OFFSET;
-import static com.hasangurbuz.vehiclemanager.api.ApiConstant.SORT_PROPERTY;
-import static org.openapitools.model.SortDTO.DirectionEnum.ASC;
+import static com.hasangurbuz.vehiclemanager.api.ApiConstant.*;
 
 @RestController
 public class VehicleApiController implements VehicleApi {
@@ -69,6 +60,18 @@ public class VehicleApiController implements VehicleApi {
 
         if (vehicleCreateRequestDTO.getModelYear() == null) {
             throw ApiException.invalidInput("Model year required");
+        }
+
+        if (vehicleCreateRequestDTO.getModelYear() < DATE_MIN.getYear()) {
+            throw ApiException.invalidInput("Invalid model year");
+        }
+
+        if (vehicleCreateRequestDTO.getModelYear() > DATE_MAX.getYear()) {
+            throw ApiException.invalidInput("Invalid model year");
+        }
+
+        if (vehicleCreateRequestDTO.getBrand().length() > BRAND_LENGTH_MAX) {
+            throw ApiException.invalidInput("Brand max length : " + BRAND_LENGTH_MAX);
         }
 
         if (!ApiValidator.isPlateNumberValid(vehicleCreateRequestDTO.getNumberPlate())) {
@@ -116,23 +119,7 @@ public class VehicleApiController implements VehicleApi {
             vehicleListRequestDTO = new VehicleListRequestDTO();
         }
 
-        PageRequestDTO pageRequest = vehicleListRequestDTO.getPageRequest();
-
-        if (pageRequest.getFrom() == null) {
-            pageRequest.setFrom(PAGE_OFFSET);
-        }
-        if (pageRequest.getSize() == null) {
-            pageRequest.setSize(PAGE_LIMIT);
-        }
-        if (pageRequest.getSort() == null) {
-            pageRequest.setSort(new SortDTO());
-        }
-        if (pageRequest.getSort().getProperty() == null) {
-            pageRequest.getSort().setProperty(SORT_PROPERTY);
-        }
-        if (pageRequest.getSort().getDirection() == null) {
-            pageRequest.getSort().setDirection(ASC);
-        }
+        PageRequestDTO pageRequest = ApiValidator.validatePageRequest(vehicleListRequestDTO.getPageRequest());
 
         PagedResults<VehicleAuthority> results = vAuthService
                 .searchByUserId(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), pageRequest);

@@ -1,6 +1,13 @@
 package com.hasangurbuz.vehiclemanager.api;
 
 import org.codehaus.plexus.util.StringUtils;
+import org.openapitools.model.PageRequestDTO;
+import org.openapitools.model.SortDTO;
+
+import static com.hasangurbuz.vehiclemanager.api.ApiConstant.PAGE_LIMIT;
+import static com.hasangurbuz.vehiclemanager.api.ApiConstant.PAGE_OFFSET;
+import static com.hasangurbuz.vehiclemanager.api.ApiConstant.SORT_PROPERTY;
+import static org.openapitools.model.SortDTO.DirectionEnum.ASC;
 
 public class ApiValidator {
 
@@ -82,6 +89,34 @@ public class ApiValidator {
             return true;
         }
         return false;
+    }
+
+    public static PageRequestDTO validatePageRequest(PageRequestDTO pageRequest) {
+        if (pageRequest == null) {
+            pageRequest = new PageRequestDTO();
+        }
+        if (pageRequest.getFrom() == null) {
+            pageRequest.setFrom(PAGE_OFFSET);
+        }
+        if (pageRequest.getFrom() < 0) {
+            pageRequest.setFrom(PAGE_OFFSET);
+        }
+        if (pageRequest.getSize() == null) {
+            pageRequest.setSize(PAGE_LIMIT);
+        }
+        if (pageRequest.getSize() < 1) {
+            pageRequest.setFrom(PAGE_LIMIT);
+        }
+        if (pageRequest.getSort() == null) {
+            pageRequest.setSort(new SortDTO());
+        }
+        if (pageRequest.getSort().getProperty() == null) {
+            pageRequest.getSort().setProperty(SORT_PROPERTY);
+        }
+        if (pageRequest.getSort().getDirection() == null) {
+            pageRequest.getSort().setDirection(ASC);
+        }
+        return pageRequest;
     }
 
 

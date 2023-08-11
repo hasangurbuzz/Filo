@@ -2,6 +2,7 @@ package com.hasangurbuz.vehiclemanager.api.web;
 
 import com.hasangurbuz.vehiclemanager.api.ApiContext;
 import com.hasangurbuz.vehiclemanager.api.ApiException;
+import com.hasangurbuz.vehiclemanager.api.ApiValidator;
 import com.hasangurbuz.vehiclemanager.api.mapper.VehicleAuthorityMapper;
 import com.hasangurbuz.vehiclemanager.api.mapper.VehicleMapper;
 import com.hasangurbuz.vehiclemanager.api.mapper.VehicleUserMapper;
@@ -67,13 +68,6 @@ public class VehicleUsersApiController implements VehicleUsersApi {
             throw ApiException.invalidInput("User role required");
         }
 
-        VehicleAuthority foundVAuthority = vAuthService
-                .find(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), id);
-
-        if (foundVAuthority == null) {
-            throw ApiException.notFound("Not found : " + id);
-        }
-
         VehicleAuthority userVAuthority = vAuthService
                 .find(ApiContext.get().getCompanyId(), vehicleUserDTO.getId(), id);
 
@@ -81,7 +75,7 @@ public class VehicleUsersApiController implements VehicleUsersApi {
             throw ApiException.invalidInput("User exists");
         }
 
-        userVAuthority.setVehicle(foundVAuthority.getVehicle());
+        userVAuthority.setVehicle(currentUserAuth.getVehicle());
         userVAuthority.setUserId(vehicleUserDTO.getId());
         userVAuthority.setRole(vehicleMapper.toUserRole(vehicleUserDTO.getRole()));
 
@@ -146,27 +140,7 @@ public class VehicleUsersApiController implements VehicleUsersApi {
             vehicleUserListRequestDTO = new VehicleUserListRequestDTO();
         }
 
-        PageRequestDTO pageRequest = vehicleUserListRequestDTO.getPageRequest();
-
-        if (pageRequest.getFrom() == null) {
-            pageRequest.setFrom(PAGE_OFFSET);
-        }
-
-        if (pageRequest.getSize() == null) {
-            pageRequest.setSize(PAGE_LIMIT);
-        }
-
-        if (pageRequest.getSort() == null) {
-            pageRequest.setSort(new SortDTO());
-        }
-
-        if (pageRequest.getSort().getProperty() == null) {
-            pageRequest.getSort().setProperty(SORT_PROPERTY);
-        }
-
-        if (pageRequest.getSort().getDirection() == null) {
-            pageRequest.getSort().setDirection(ASC);
-        }
+        PageRequestDTO pageRequest = ApiValidator.validatePageRequest(vehicleUserListRequestDTO.getPageRequest());
 
         PagedResults<VehicleAuthority> results = vAuthService
                 .searchByVehicleId(ApiContext.get().getCompanyId(), id, pageRequest);
