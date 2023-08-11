@@ -95,7 +95,10 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
                                 .and(vehicleAuth.vehicle.id.eq(vehicleId))
                                 .and(vehicleAuth.vehicle.isDeleted.isFalse())
                                 .and(vehicleAuth.isDeleted.isFalse())
-                ).fetchResults();
+                ).offset(pageRequest.getFrom())
+                .limit(pageRequest.getSize())
+                .orderBy(order)
+                .fetchResults();
 
         pagedResults.setTotal(results.getTotal());
         pagedResults.setItems(results.getResults());
