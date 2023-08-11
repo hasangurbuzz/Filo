@@ -8,7 +8,6 @@ import com.hasangurbuz.vehiclemanager.repository.VehicleAuthorityRepository;
 import com.hasangurbuz.vehiclemanager.service.PagedResults;
 import com.hasangurbuz.vehiclemanager.service.VehicleAuthorityService;
 import com.querydsl.core.QueryResults;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +15,6 @@ import org.openapitools.model.VehicleListRequestDTO;
 import org.openapitools.model.VehicleUserListRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.time.OffsetDateTime;
@@ -113,43 +111,37 @@ public class VehicleAuthorityServiceImpl implements VehicleAuthorityService {
         JPAQuery<VehicleAuthority> queryFactory = new JPAQuery<VehicleAuthority>(entityManager);
 
 
-        // select vauth from vauth
-        // where userId == userId
-
-
-        // id, user_id, vehicle_id, is_deleted
-        // id, name
-
-        JPAQuery<VehicleAuthority> query = queryFactory
-                .select(vehicleAuth)
+        List<Long> vehicleIds = queryFactory
+                .select(vehicleAuth.vehicle.id)
                 .from(vehicleAuth)
-                .where(vehicleAuth.vehicle.id.in(
-                        JPAExpressions.select(vehicleAuth.vehicle.id)
-                                .from(vehicleAuth)
-                                .where(
-                                        vehicleAuth.userId.eq(userId)
-                                                .and(vehicleAuth.role.in(userRole, UserRole.STANDARD))
-                                                .and(vehicleAuth.isDeleted.isFalse())
-                                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
-                                                .and(vehicleAuth.vehicle.id.eq(vehicleId))
+                .where(
+                        vehicleAuth.userId.eq(userId)
+                                .and(vehicleAuth.vehicle.id.eq(vehicleId))
+                                .and(vehicleAuth.vehicle.companyId.eq(companyId))
+                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
+                                .and(vehicleAuth.isDeleted.isFalse())
+                                .and(vehicleAuth.role.in(userRole, UserRole.STANDARD))
 
-                                )
-                                .groupBy(vehicleAuth.userId)
-                ));
-//
-//        JPAQuery<VehicleAuthority> query = queryFactory.selectFrom(vehicleAuth)
-//                .where(
-//                        vehicleAuth.vehicle.companyId.eq(companyId)
-//                                .and(vehicleAuth.userId.eq(userId))
-//                                .and(vehicleAuth.role.in(userRole, UserRole.STANDARD))
-//                                .and(vehicleAuth.isDeleted.isFalse())
-//                                .and(vehicleAuth.vehicle.isDeleted.isFalse())
-//                                .and(vehicleAuth.vehicle.id.eq(vehicleId))
-//
-//                );
-        if (userRole != null) {
-            query = query.where(vehicleAuth.role.eq(userRole));
+
+                )
+                .fetch();
+
+        if (vehicleIds.isEmpty()) {
+            return vAuthorityPaged;
         }
+
+        JPAQuery<VehicleAuthority> query = new JPAQueryFactory(entityManager)
+                .selectFrom(vehicleAuth)
+                .where(
+                        vehicleAuth.vehicle.id.in(vehicleIds)
+                                .and(vehicleAuth.isDeleted.isFalse())
+
+                );
+
+        if (request.getUserRole() != null) {
+            query = query.where(vehicleAuth.role.eq(UserRole.valueOf(request.getUserRole().getValue())));
+        }
+
         QueryResults<VehicleAuthority> results = query
                 .offset(request.getFrom())
                 .limit(request.getSize())
