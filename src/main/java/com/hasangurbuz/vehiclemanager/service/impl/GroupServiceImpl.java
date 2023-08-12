@@ -27,13 +27,16 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public boolean existsSameName(String name) {
+    public boolean existsSameName(Long companyId, String name) {
         QGroup group = QGroup.group;
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
         long count = queryFactory
                 .selectFrom(group)
-                .where(group.name.eq(name))
+                .where(
+                        group.name.eq(name)
+                                .and(group.companyId.eq(companyId))
+                )
                 .fetchCount();
 
         return count > 0;

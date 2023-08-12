@@ -3,12 +3,7 @@ package com.hasangurbuz.vehiclemanager.domain;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -47,4 +42,8 @@ public class Vehicle {
 
     @Column(name = "creation_date", nullable = false)
     private OffsetDateTime creationDate;
+
+    @ManyToOne
+    @JoinColumn(name = "group_id", referencedColumnName = "id")
+    private Group group;
 }

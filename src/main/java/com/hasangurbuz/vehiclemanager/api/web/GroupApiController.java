@@ -4,10 +4,13 @@ import com.hasangurbuz.vehiclemanager.api.ApiContext;
 import com.hasangurbuz.vehiclemanager.api.ApiException;
 import com.hasangurbuz.vehiclemanager.api.mapper.GroupMapper;
 import com.hasangurbuz.vehiclemanager.domain.Group;
-import com.hasangurbuz.vehiclemanager.domain.GroupVehicleAuthority;
+import com.hasangurbuz.vehiclemanager.domain.GroupAuthority;
 import com.hasangurbuz.vehiclemanager.domain.UserRole;
+import com.hasangurbuz.vehiclemanager.domain.VehicleAuthority;
+import com.hasangurbuz.vehiclemanager.service.GroupAuthorityService;
 import com.hasangurbuz.vehiclemanager.service.GroupService;
-import com.hasangurbuz.vehiclemanager.service.GroupVAuthorityService;
+import com.hasangurbuz.vehiclemanager.service.PagedResults;
+import com.hasangurbuz.vehiclemanager.service.VehicleAuthorityService;
 import org.apache.commons.lang3.StringUtils;
 import org.openapitools.api.GroupApi;
 import org.openapitools.model.*;
@@ -23,7 +26,10 @@ public class GroupApiController implements GroupApi {
     private GroupService groupService;
 
     @Autowired
-    private GroupVAuthorityService groupVAuthService;
+    private GroupAuthorityService groupAuthService;
+
+    @Autowired
+    private VehicleAuthorityService vAuthService;
 
     @Autowired
     private GroupMapper groupMapper;
@@ -43,49 +49,66 @@ public class GroupApiController implements GroupApi {
 
         groupName = StringUtils.normalizeSpace(groupName);
 
-        if (groupService.existsSameName(groupName)) {
+        if (groupService.existsSameName(ApiContext.get().getCompanyId(), groupName)) {
             throw ApiException.invalidInput("Name is taken");
         }
 
         Group group = new Group();
+
+        if (groupCreateRequestDTO.getParentId() != null) {
+            GroupAuthority parentGroupAuth = groupAuthService
+                    .find(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), groupCreateRequestDTO.getParentId());
+
+            if (parentGroupAuth == null) {
+                throw ApiException.notFound("Not found parent : " + groupCreateRequestDTO.getParentId());
+            }
+
+            Group parentGroup = parentGroupAuth.getGroup();
+
+            if (parentGroup == null) {
+                throw ApiException.notFound("Not found parent : " + groupCreateRequestDTO.getParentId());
+            }
+
+            group.setParentGroup(parentGroup);
+        }
+
         group.setName(groupName);
-
+        group.setCompanyId(ApiContext.get().getCompanyId());
         group = groupService.create(group);
-        GroupVehicleAuthority groupVAuth = new GroupVehicleAuthority();
-        groupVAuth.setUserRole(ApiContext.get().getUserRole());
-        groupVAuth.setGroup(group);
 
-        groupVAuth = groupVAuthService.create(groupVAuth);
+        GroupAuthority groupAuthority = new GroupAuthority();
+        groupAuthority.setUserId(ApiContext.get().getUserId());
+        groupAuthority.setRole(ApiContext.get().getUserRole());
+        groupAuthority.setGroup(group);
 
-        group = groupVAuth.getGroup();
+        groupAuthService.create(groupAuthority);
 
         GroupDTO response = groupMapper.toDto(group);
+
         return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<GroupDTO> createGroupInGroup(Long id) {
-        return GroupApi.super.createGroupInGroup(id);
-    }
-
-    @Override
-    public ResponseEntity<Void> deleteGroup(Long id) {
-        return GroupApi.super.deleteGroup(id);
-    }
-
-    @Override
     public ResponseEntity<GroupDTO> getGroup(Long id) {
+        GroupAuthority currentUserAuth = groupAuthService
+                .find(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), id);
+
+        if (currentUserAuth == null){
+            throw ApiException.notFound("Not found id : " + id);
+        }
+
+        Group group = currentUserAuth.getGroup();
+
+
         return GroupApi.super.getGroup(id);
     }
 
     @Override
     public ResponseEntity<GroupListResponseDTO> searchGroup(GroupListRequestDTO groupListRequestDTO) {
-        
-        return GroupApi.super.searchGroup(groupListRequestDTO);
-    }
+        PagedResults<VehicleAuthority> vAuth = vAuthService.searchByUserId(ApiContext.get().getCompanyId(), ApiContext.get().getUserId(), groupListRequestDTO.getPageRequest());
 
-    @Override
-    public ResponseEntity<GroupDTO> updateGroup(Long id, GroupUpdateRequestDTO groupUpdateRequestDTO) {
-        return GroupApi.super.updateGroup(id, groupUpdateRequestDTO);
+
+
+        return GroupApi.super.searchGroup(groupListRequestDTO);
     }
 }

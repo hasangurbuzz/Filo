@@ -403,92 +403,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /group/{id}/create:
-    post:
-      tags:
-        - group
-      summary: Create group in group
-      operationId: vehicle_createGroupInGroup
-      parameters:
-        - $ref: "#/components/parameters/XUser"
-        - in: path
-          name: id
-          schema:
-            type: integer
-            format: int64
-          required: true
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Group'
-        '400':
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /group/{id}/update:
-    post:
-      tags:
-        - group
-      summary: Update group
-      operationId: vehicle_updateGroup
-      parameters:
-        - $ref: "#/components/parameters/XUser"
-        - in: path
-          name: id
-          schema:
-            type: integer
-            format: int64
-          required: true
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GroupUpdateRequest'
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Group'
-        '400':
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /group/{id}/delete:
-    post:
-      tags:
-        - group
-      summary: Delete group
-      operationId: vehicle_deleteGroup
-      parameters:
-        - $ref: "#/components/parameters/XUser"
-        - in: path
-          name: id
-          schema:
-            type: integer
-            format: int64
-          required: true
-      responses:
-        '200':
-          description: Success
-        '400':
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
   /group/{id}/vehicles/create:
     post:
       tags:
@@ -682,6 +596,9 @@ components:
           type: string
         modelYear:
           type: integer
+        groupId:
+          type: integer
+          format: int64
 
 
     Vehicle:
@@ -711,6 +628,11 @@ components:
           format: date-time
         actionAccess:
           $ref: '#/components/schemas/VehicleActionAccess'
+        groupId:
+          type: integer
+          format: int64
+        groupName:
+          type: string
 
     VehicleActionAccess:
       type: object
@@ -827,6 +749,9 @@ components:
       properties:
         name:
           type: string
+        parentId:
+          type: integer
+          format: int64
 
     GroupListRequest:
       type: object

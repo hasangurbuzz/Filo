@@ -28,6 +28,9 @@ public class Group {
     @JoinColumn(name = "parent_group_id", referencedColumnName = "id")
     private Group parentGroup;
 
+    @Column(name = "company_id")
+    private Long companyId;
+
     @Column(name = "is_deleted")
     private boolean isDeleted;
 }
