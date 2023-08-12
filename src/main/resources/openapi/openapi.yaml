@@ -319,6 +319,283 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /group/create:
+    post:
+      tags:
+        - group
+      summary: Create group
+      operationId: vehicle_createGroup
+      parameters:
+        - $ref: "#/components/parameters/XUser"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupCreateRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /group/search:
+    post:
+      tags:
+        - group
+      summary: Search group
+      operationId: vehicle_searchGroup
+      parameters:
+        - $ref: "#/components/parameters/XUser"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupListRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupListResponse'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /group/{id}:
+    post:
+      tags:
+        - group
+      summary: Get group
+      operationId: vehicle_getGroup
+      parameters:
+        - $ref: "#/components/parameters/XUser"
+        - in: path
+          name: id
+          schema:
+            type: integer
+            format: int64
+          required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /group/{id}/create:
+    post:
+      tags:
+        - group
+      summary: Create group in group
+      operationId: vehicle_createGroupInGroup
+      parameters:
+        - $ref: "#/components/parameters/XUser"
+        - in: path
+          name: id
+          schema:
+            type: integer
+            format: int64
+          required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /group/{id}/update:
+    post:
+      tags:
+        - group
+      summary: Update group
+      operationId: vehicle_updateGroup
+      parameters:
+        - $ref: "#/components/parameters/XUser"
+        - in: path
+          name: id
+          schema:
+            type: integer
+            format: int64
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupUpdateRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /group/{id}/delete:
+    post:
+      tags:
+        - group
+      summary: Delete group
+      operationId: vehicle_deleteGroup
+      parameters:
+        - $ref: "#/components/parameters/XUser"
+        - in: path
+          name: id
+          schema:
+            type: integer
+            format: int64
+          required: true
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /group/{id}/vehicles/create:
+    post:
+      tags:
+        - group vehicles
+      summary: Create vehicle in group
+      operationId: vehicle_createGroupVehicle
+      parameters:
+        - $ref: "#/components/parameters/XUser"
+        - in: path
+          name: id
+          schema:
+            type: integer
+            format: int64
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupVehicleCreateRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /group/{id}/vehicles/search:
+    post:
+      tags:
+        - group vehicles
+      summary: Search vehicle in group
+      operationId: vehicle_searchGroupVehicle
+      parameters:
+        - $ref: "#/components/parameters/XUser"
+        - in: path
+          name: id
+          schema:
+            type: integer
+            format: int64
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupVehicleListRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupVehicleListResponse'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /group/{id}/vehicles/{vehicleId}/delete:
+    post:
+      tags:
+        - group vehicles
+      summary: Delete vehicle in group
+      operationId: vehicle_deleteGroupVehicle
+      parameters:
+        - $ref: "#/components/parameters/XUser"
+        - in: path
+          name: id
+          schema:
+            type: integer
+            format: int64
+          required: true
+        - in: path
+          name: vehicleId
+          schema:
+            type: integer
+            format: int64
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupVehicleCreateRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 
 components:
@@ -525,6 +802,86 @@ components:
       properties:
         userRole:
           $ref: '#/components/schemas/UserRole'
+
+    Group:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        subGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+        vehicles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vehicle'
+
+    GroupCreateRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+
+    GroupListRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        pageRequest:
+          $ref: '#/components/schemas/PageRequest'
+
+    GroupListResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int64
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+
+    GroupUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+
+    GroupVehicleCreateRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+
+    GroupVehicleListRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        subGroups:
+          type: boolean
+          default: false
+        pageRequest:
+          $ref: '#/components/schemas/PageRequest'
+
+    GroupVehicleListResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vehicle'
 
 
 

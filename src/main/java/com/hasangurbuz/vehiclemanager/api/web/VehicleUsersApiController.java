@@ -5,14 +5,13 @@ import com.hasangurbuz.vehiclemanager.api.ApiException;
 import com.hasangurbuz.vehiclemanager.api.ApiValidator;
 import com.hasangurbuz.vehiclemanager.api.mapper.VehicleAuthorityMapper;
 import com.hasangurbuz.vehiclemanager.api.mapper.VehicleMapper;
-import com.hasangurbuz.vehiclemanager.api.mapper.VehicleUserMapper;
+import com.hasangurbuz.vehiclemanager.api.mapper.VAuthUserMapper;
 import com.hasangurbuz.vehiclemanager.domain.UserRole;
 import com.hasangurbuz.vehiclemanager.domain.VehicleAuthority;
 import com.hasangurbuz.vehiclemanager.service.PagedResults;
 import com.hasangurbuz.vehiclemanager.service.VehicleAuthorityService;
 import org.openapitools.api.VehicleUsersApi;
 import org.openapitools.model.PageRequestDTO;
-import org.openapitools.model.SortDTO;
 import org.openapitools.model.VehicleUserDTO;
 import org.openapitools.model.VehicleUserListRequestDTO;
 import org.openapitools.model.VehicleUserListResponseDTO;
@@ -23,11 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-
-import static com.hasangurbuz.vehiclemanager.api.ApiConstant.PAGE_LIMIT;
-import static com.hasangurbuz.vehiclemanager.api.ApiConstant.PAGE_OFFSET;
-import static com.hasangurbuz.vehiclemanager.api.ApiConstant.SORT_PROPERTY;
-import static org.openapitools.model.SortDTO.DirectionEnum.ASC;
 
 @RestController
 public class VehicleUsersApiController implements VehicleUsersApi {
@@ -42,7 +36,7 @@ public class VehicleUsersApiController implements VehicleUsersApi {
     private VehicleMapper vehicleMapper;
 
     @Autowired
-    private VehicleUserMapper vUserMapper;
+    private VAuthUserMapper vAuthUserMapper;
 
 
     @Override
@@ -81,7 +75,7 @@ public class VehicleUsersApiController implements VehicleUsersApi {
 
         userVAuthority = vAuthService.create(userVAuthority);
 
-        VehicleUserDTO response = vUserMapper.toDto(userVAuthority);
+        VehicleUserDTO response = vAuthUserMapper.toDto(userVAuthority);
 
         return ResponseEntity.ok(response);
     }
@@ -116,7 +110,7 @@ public class VehicleUsersApiController implements VehicleUsersApi {
             throw ApiException.notFound("Not found : " + id);
         }
 
-        VehicleUserDTO response = vUserMapper.toDto(userVAuthority);
+        VehicleUserDTO response = vAuthUserMapper.toDto(userVAuthority);
 
         return ResponseEntity.ok(response);
     }
@@ -145,7 +139,7 @@ public class VehicleUsersApiController implements VehicleUsersApi {
         PagedResults<VehicleAuthority> results = vAuthService
                 .searchByVehicleId(ApiContext.get().getCompanyId(), id, pageRequest);
 
-        List<VehicleUserDTO> resultItems = vUserMapper.toDtoList(results.getItems());
+        List<VehicleUserDTO> resultItems = vAuthUserMapper.toDtoList(results.getItems());
 
         VehicleUserListResponseDTO response = new VehicleUserListResponseDTO();
         response.setItems(resultItems);
@@ -185,7 +179,7 @@ public class VehicleUsersApiController implements VehicleUsersApi {
 
         userVAuthority = vAuthService.update(userVAuthority);
 
-        VehicleUserDTO response = vUserMapper.toDto(userVAuthority);
+        VehicleUserDTO response = vAuthUserMapper.toDto(userVAuthority);
 
         return ResponseEntity.ok(response);
     }

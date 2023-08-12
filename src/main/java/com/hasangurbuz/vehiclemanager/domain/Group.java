@@ -27,4 +27,7 @@ public class Group {
     @ManyToOne
     @JoinColumn(name = "parent_group_id", referencedColumnName = "id")
     private Group parentGroup;
+
+    @Column(name = "is_deleted")
+    private boolean isDeleted;
 }

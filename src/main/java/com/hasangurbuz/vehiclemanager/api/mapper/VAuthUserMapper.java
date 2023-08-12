@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class VehicleUserMapper implements Mapper<VehicleAuthority, VehicleUserDTO> {
+public class VAuthUserMapper implements Mapper<VehicleAuthority, VehicleUserDTO> {
 
     @Autowired
     private VehicleMapper vehicleMapper;

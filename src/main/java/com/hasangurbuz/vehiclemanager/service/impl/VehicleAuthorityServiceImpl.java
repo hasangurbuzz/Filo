@@ -8,6 +8,7 @@ import com.hasangurbuz.vehiclemanager.service.VehicleAuthorityService;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.openapitools.model.GroupDTO;
 import org.openapitools.model.PageRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
