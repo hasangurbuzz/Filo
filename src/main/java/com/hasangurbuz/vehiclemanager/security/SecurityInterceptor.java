@@ -23,6 +23,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private LogService log;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         XUserDTO user = this.authenticatedUser(request);
@@ -36,9 +39,10 @@ public class SecurityInterceptor implements HandlerInterceptor {
             response.setCharacterEncoding("UTF-8");
 
             try {
+                log.E(error.getCode(), error.getMessage());
                 response.getWriter().println(objectMapper.writeValueAsString(error));
             } catch (Exception e) {
-                //log.error("Error on response.write", e);
+                log.E(e.getMessage());
             }
             return false;
         }
@@ -52,6 +56,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
         apiCtx.setCompanyId(user.getCompanyId());
         apiCtx.setCompanyName(user.getCompanyName());
 
+        log.D(user.getUserId().toString(), "authenticated");
         return true;
     }
 
