@@ -10,8 +10,14 @@ spring:
       hibernate:
         format_sql: true
     open-in-view: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
 server:
   servlet:
     context-path: /api
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health"

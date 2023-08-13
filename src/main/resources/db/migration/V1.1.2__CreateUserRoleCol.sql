@@ -1,0 +1,2 @@
+ALTER TABLE T_Vehicle_Authority
+    ADD USER_ROLE VARCHAR(15);

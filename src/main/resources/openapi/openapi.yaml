@@ -32,7 +32,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /vehicle/{id}:
+  /vehicle/{vehicleId}:
     post:
       tags:
         - vehicle
@@ -41,7 +41,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/XUser"
         - in: path
-          name: id
+          name: vehicleId
           schema:
             type: integer
             format: int64
@@ -88,7 +88,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /vehicle/{id}/update:
+  /vehicle/{vehicleId}/update:
     post:
       tags:
         - vehicle
@@ -97,7 +97,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/XUser"
         - in: path
-          name: id
+          name: vehicleId
           schema:
             type: integer
             format: int64
@@ -122,7 +122,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /vehicle/{id}/delete:
+  /vehicle/{vehicleId}/delete:
     post:
       tags:
         - vehicle
@@ -131,7 +131,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/XUser"
         - in: path
-          name: id
+          name: vehicleId
           schema:
             type: integer
             format: int64
@@ -147,7 +147,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /vehicle/{id}/users/search:
+  /vehicle/{vehicleId}/users/search:
     post:
       tags:
         - vehicle users
@@ -156,7 +156,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/XUser"
         - in: path
-          name: id
+          name: vehicleId
           schema:
             type: integer
             format: int64
@@ -181,7 +181,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /vehicle/{id}/users/{userId}:
+  /vehicle/{vehicleId}/users/{userId}:
     post:
       tags:
         - vehicle users
@@ -190,7 +190,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/XUser"
         - in: path
-          name: id
+          name: vehicleId
           schema:
             type: integer
             format: int64
@@ -215,7 +215,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /vehicle/{id}/users/create:
+  /vehicle/{vehicleId}/users/create:
     post:
       tags:
         - vehicle users
@@ -224,7 +224,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/XUser"
         - in: path
-          name: id
+          name: vehicleId
           schema:
             type: integer
             format: int64
@@ -249,47 +249,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /vehicle/{id}/users/{userId}/update:
-    post:
-      tags:
-        - vehicle users
-      summary: Update user on vehicle
-      operationId: vehicle_updateUser
-      parameters:
-        - $ref: "#/components/parameters/XUser"
-        - in: path
-          name: id
-          schema:
-            type: integer
-            format: int64
-          required: true
-        - in: path
-          name: userId
-          schema:
-            type: integer
-            format: int64
-          required: true
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VehicleUserUpdateRequest'
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VehicleUser'
-        '400':
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /vehicle/{id}/users/{userId}/delete:
+  /vehicle/{vehicleId}/users/{userId}/delete:
     post:
       tags:
         - vehicle users
@@ -298,7 +258,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/XUser"
         - in: path
-          name: id
+          name: vehicleId
           schema:
             type: integer
             format: int64
@@ -352,15 +312,9 @@ paths:
       tags:
         - group
       summary: Search group
-      operationId: vehicle_searchGroup
+      operationId: vehicle_getGroupTree
       parameters:
         - $ref: "#/components/parameters/XUser"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GroupTreeRequest'
       responses:
         '200':
           description: Success
@@ -491,27 +445,11 @@ components:
         creationDate:
           type: string
           format: date-time
-        actionAccess:
-          $ref: '#/components/schemas/VehicleActionAccess'
         groupId:
           type: integer
           format: int64
         groupName:
           type: string
-
-    VehicleActionAccess:
-      type: object
-      required:
-        - update
-        - delete
-        - manageUsers
-      properties:
-        update:
-          type: boolean
-        delete:
-          type: boolean
-        manageUsers:
-          type: boolean
 
     Sort:
       type: object
@@ -598,14 +536,6 @@ components:
           format: int64
         name:
           type: string
-        subGroups:
-          type: array
-          items:
-            $ref: '#/components/schemas/Group'
-        vehicles:
-          type: array
-          items:
-            $ref: '#/components/schemas/Vehicle'
 
     GroupCreateRequest:
       type: object
@@ -617,15 +547,6 @@ components:
         parentId:
           type: integer
           format: int64
-
-    GroupTreeRequest:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        pageRequest:
-          $ref: '#/components/schemas/PageRequest'
 
     GroupNode:
       type: object
