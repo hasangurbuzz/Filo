@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/vehicle_manager
-    username: nobody
-    password: 1234
+    url: jdbc:postgresql://localhost:5432/db_name
+    username: username
+    password: passwd
 
   jpa:
     show-sql: true
