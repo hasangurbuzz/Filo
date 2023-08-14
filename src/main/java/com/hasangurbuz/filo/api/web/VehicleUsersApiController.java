@@ -6,9 +6,11 @@ import com.hasangurbuz.filo.api.ApiValidator;
 import com.hasangurbuz.filo.api.mapper.VAuthUserMapper;
 import com.hasangurbuz.filo.api.mapper.VehicleAuthorityMapper;
 import com.hasangurbuz.filo.api.mapper.VehicleMapper;
+import com.hasangurbuz.filo.domain.GroupAuthority;
 import com.hasangurbuz.filo.domain.UserRole;
 import com.hasangurbuz.filo.domain.Vehicle;
 import com.hasangurbuz.filo.domain.VehicleAuthority;
+import com.hasangurbuz.filo.service.GroupAuthorityService;
 import com.hasangurbuz.filo.service.PagedResults;
 import com.hasangurbuz.filo.service.VehicleAuthorityService;
 import com.hasangurbuz.filo.service.VehicleService;
@@ -32,6 +34,9 @@ public class VehicleUsersApiController implements VehicleUsersApi {
 
     @Autowired
     private VehicleService vehicleService;
+
+    @Autowired
+    private GroupAuthorityService groupAuthService;
 
     @Autowired
     private VehicleAuthorityMapper vAuthMapper;
@@ -64,11 +69,13 @@ public class VehicleUsersApiController implements VehicleUsersApi {
         VehicleAuthority currentUserAuth = vAuthService
                 .find(ApiContext.get().getUserId(), vehicle);
 
-        if (currentUserAuth == null) {
+        GroupAuthority currentGroupAuth = groupAuthService.get(ApiContext.get().getUserId(), vehicle.getGroup());
+
+        if (currentUserAuth == null && currentGroupAuth == null) {
             throw ApiException.notFound("Not found : " + vehicleId);
         }
 
-        if (currentUserAuth.getRole() != UserRole.COMPANY_ADMIN) {
+        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
             throw ApiException.accessDenied();
         }
 
@@ -94,6 +101,10 @@ public class VehicleUsersApiController implements VehicleUsersApi {
     @Transactional(readOnly = true)
     public ResponseEntity<VehicleUserDTO> getUser(Long vehicleId, Long userId) {
 
+        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
+            throw ApiException.accessDenied();
+        }
+
         if (vehicleId == null) {
             throw ApiException.invalidInput("Vehicle id required");
         }
@@ -111,12 +122,10 @@ public class VehicleUsersApiController implements VehicleUsersApi {
         VehicleAuthority currentUserAuth = vAuthService
                 .find(ApiContext.get().getUserId(), vehicle);
 
-        if (currentUserAuth == null) {
-            throw ApiException.notFound("Not found : " + vehicleId);
-        }
+        GroupAuthority currentGroupAuth = groupAuthService.get(ApiContext.get().getUserId(), vehicle.getGroup());
 
-        if (currentUserAuth.getRole() != UserRole.COMPANY_ADMIN) {
-            throw ApiException.accessDenied();
+        if (currentUserAuth == null && currentGroupAuth == null) {
+            throw ApiException.notFound("Not found : " + vehicleId);
         }
 
         VehicleAuthority userVAuthority = vAuthService
@@ -135,6 +144,10 @@ public class VehicleUsersApiController implements VehicleUsersApi {
     @Transactional(readOnly = true)
     public ResponseEntity<VehicleUserListResponseDTO> searchUser(Long vehicleId, VehicleUserListRequestDTO vehicleUserListRequestDTO) {
 
+        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
+            throw ApiException.accessDenied();
+        }
+
         Vehicle vehicle = vehicleService.get(vehicleId, ApiContext.get().getCompanyId());
 
         if (vehicle == null) {
@@ -144,12 +157,10 @@ public class VehicleUsersApiController implements VehicleUsersApi {
         VehicleAuthority currentUserAuth = vAuthService
                 .find(ApiContext.get().getUserId(), vehicle);
 
-        if (currentUserAuth == null) {
-            throw ApiException.notFound("Not found : " + vehicleId);
-        }
+        GroupAuthority currentGroupAuth = groupAuthService.get(ApiContext.get().getUserId(), vehicle.getGroup());
 
-        if (currentUserAuth.getRole() != UserRole.COMPANY_ADMIN) {
-            throw ApiException.accessDenied();
+        if (currentUserAuth == null && currentGroupAuth == null) {
+            throw ApiException.notFound("Not found : " + vehicleId);
         }
 
         if (vehicleUserListRequestDTO == null) {
@@ -174,6 +185,10 @@ public class VehicleUsersApiController implements VehicleUsersApi {
     @Transactional
     public ResponseEntity<Void> deleteUser(Long vehicleId, Long userId) {
 
+        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
+            throw ApiException.accessDenied();
+        }
+
         Vehicle vehicle = vehicleService.get(vehicleId, ApiContext.get().getCompanyId());
 
         if (vehicle == null) {
@@ -183,12 +198,10 @@ public class VehicleUsersApiController implements VehicleUsersApi {
         VehicleAuthority currentUserAuth = vAuthService
                 .find(ApiContext.get().getUserId(), vehicle);
 
-        if (currentUserAuth == null) {
-            throw ApiException.notFound("Not found : " + vehicleId);
-        }
+        GroupAuthority currentGroupAuth = groupAuthService.get(ApiContext.get().getUserId(), vehicle.getGroup());
 
-        if (currentUserAuth.getRole() != UserRole.COMPANY_ADMIN) {
-            throw ApiException.accessDenied();
+        if (currentUserAuth == null && currentGroupAuth == null) {
+            throw ApiException.notFound("Not found : " + vehicleId);
         }
 
         if (currentUserAuth.getUserId() == userId) {

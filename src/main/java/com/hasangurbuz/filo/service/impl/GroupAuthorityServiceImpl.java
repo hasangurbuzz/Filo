@@ -5,7 +5,10 @@ import com.hasangurbuz.filo.domain.GroupAuthority;
 import com.hasangurbuz.filo.domain.QGroupAuthority;
 import com.hasangurbuz.filo.repository.GroupAuthorityRepository;
 import com.hasangurbuz.filo.service.GroupAuthorityService;
+import com.hasangurbuz.filo.service.PagedResults;
+import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.openapitools.model.PageRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -54,7 +57,10 @@ public class GroupAuthorityServiceImpl implements GroupAuthorityService {
                         groupAuthority.group.companyId.eq(companyId)
                                 .and(groupAuthority.userId.eq(userId))
                                 .and(groupAuthority.group.isDeleted.isFalse())
-                ).fetch();
+                )
+                .fetch();
+
+
         return results;
     }
 }

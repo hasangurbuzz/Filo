@@ -5,15 +5,9 @@ import com.hasangurbuz.filo.api.ApiException;
 import com.hasangurbuz.filo.api.ApiValidator;
 import com.hasangurbuz.filo.api.mapper.VehicleAuthorityMapper;
 import com.hasangurbuz.filo.api.mapper.VehicleMapper;
-import com.hasangurbuz.filo.domain.Group;
-import com.hasangurbuz.filo.domain.UserRole;
-import com.hasangurbuz.filo.domain.Vehicle;
-import com.hasangurbuz.filo.domain.VehicleAuthority;
-import com.hasangurbuz.filo.service.GroupService;
-import com.hasangurbuz.filo.service.PagedResults;
-import com.hasangurbuz.filo.service.VehicleAuthorityService;
-import com.hasangurbuz.filo.service.VehicleService;
-import org.codehaus.plexus.util.StringUtils;
+import com.hasangurbuz.filo.domain.*;
+import com.hasangurbuz.filo.service.*;
+import org.apache.commons.lang3.StringUtils;
 import org.openapitools.api.VehicleApi;
 import org.openapitools.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +30,9 @@ public class VehicleApiController implements VehicleApi {
 
     @Autowired
     private GroupService groupService;
+
+    @Autowired
+    private GroupAuthorityService groupAuthService;
 
     @Autowired
     private VehicleMapper vehicleMapper;
@@ -106,13 +103,19 @@ public class VehicleApiController implements VehicleApi {
             throw ApiException.notFound("Not found group : " + vehicleCreateRequestDTO.getGroupId());
         }
 
+        GroupAuthority groupAuthority = groupAuthService.get(ApiContext.get().getUserId(), group);
+
+        if (groupAuthority == null) {
+            throw ApiException.notFound("Not found group : " + vehicleCreateRequestDTO.getGroupId());
+        }
+
         Vehicle vehicle = new Vehicle();
         vehicle.setBrand(vehicleCreateRequestDTO.getBrand());
         vehicle.setTag(vehicleCreateRequestDTO.getTag());
         vehicle.setModel(vehicleCreateRequestDTO.getModel());
         vehicle.setModelYear(vehicleCreateRequestDTO.getModelYear());
-        vehicle.setChassisNumber(vehicleCreateRequestDTO.getChassisNumber());
-        vehicle.setNumberPlate(vehicleCreateRequestDTO.getNumberPlate());
+        vehicle.setChassisNumber(StringUtils.upperCase(vehicleCreateRequestDTO.getChassisNumber()));
+        vehicle.setNumberPlate(StringUtils.upperCase(vehicleCreateRequestDTO.getNumberPlate()));
         vehicle.setCompanyId(ApiContext.get().getCompanyId());
         vehicle.setGroup(group);
 
@@ -163,18 +166,22 @@ public class VehicleApiController implements VehicleApi {
         VehicleAuthority currentUserAuth = vAuthService
                 .find(ApiContext.get().getUserId(), vehicle);
 
-        if (currentUserAuth == null) {
-            throw ApiException.notFound("Not found : " + vehicleId);
+        GroupAuthority currentGroupAuth = groupAuthService.get(ApiContext.get().getUserId(), vehicle.getGroup());
+
+        if (currentUserAuth == null && currentGroupAuth == null) {
+            throw ApiException.invalidInput("Not found");
         }
 
-        VehicleDTO response = vAuthMapper.toDto(currentUserAuth);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(vehicleMapper.toDto(vehicle));
     }
 
     @Override
     @Transactional
     public ResponseEntity<VehicleDTO> update(Long vehicleId, VehicleUpdateRequestDTO vehicleUpdateRequestDTO) {
+
+        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
+            throw ApiException.accessDenied();
+        }
 
         Vehicle vehicle = vehicleService.get(vehicleId, ApiContext.get().getCompanyId());
 
@@ -185,12 +192,10 @@ public class VehicleApiController implements VehicleApi {
         VehicleAuthority currentUserAuth = vAuthService
                 .find(ApiContext.get().getUserId(), vehicle);
 
-        if (currentUserAuth == null) {
-            throw ApiException.notFound("Not found : " + vehicleId);
-        }
+        GroupAuthority currentGroupAuth = groupAuthService.get(ApiContext.get().getUserId(), vehicle.getGroup());
 
-        if (currentUserAuth.getRole() != UserRole.COMPANY_ADMIN) {
-            throw ApiException.accessDenied();
+        if (currentUserAuth == null && currentGroupAuth == null) {
+            throw ApiException.notFound("Not found : " + vehicleId);
         }
 
         if (StringUtils.isBlank(vehicleUpdateRequestDTO.getBrand())) {
@@ -217,15 +222,24 @@ public class VehicleApiController implements VehicleApi {
             throw ApiException.invalidInput("Invalid chassis number");
         }
 
-        boolean plateNumberExists = vehicleService
-                .existsPlateNumber(ApiContext.get().getCompanyId(), vehicleUpdateRequestDTO.getNumberPlate());
+        vehicleUpdateRequestDTO.setChassisNumber(StringUtils.upperCase(vehicleUpdateRequestDTO.getChassisNumber()));
+        vehicleUpdateRequestDTO.setNumberPlate(StringUtils.upperCase(vehicleUpdateRequestDTO.getNumberPlate()));
+
+        boolean plateNumberExists = false;
+        boolean chassisNumberExists = false;
+
+        if (vehicle.getNumberPlate() != vehicleUpdateRequestDTO.getNumberPlate()) {
+            plateNumberExists = vehicleService
+                    .existsPlateNumber(ApiContext.get().getCompanyId(), vehicleUpdateRequestDTO.getNumberPlate());
+        }
 
         if (plateNumberExists) {
             throw ApiException.invalidInput("Plate number exists");
         }
 
-        boolean chassisNumberExists = vehicleService
-                .existsChassisNumber(ApiContext.get().getCompanyId(), vehicleUpdateRequestDTO.getChassisNumber());
+        if (vehicle.getChassisNumber() != vehicleUpdateRequestDTO.getChassisNumber())
+            chassisNumberExists = vehicleService
+                    .existsChassisNumber(ApiContext.get().getCompanyId(), vehicleUpdateRequestDTO.getChassisNumber());
 
         if (chassisNumberExists) {
             throw ApiException.invalidInput("Chassis number exists");
@@ -247,6 +261,10 @@ public class VehicleApiController implements VehicleApi {
     @Transactional
     public ResponseEntity<Void> delete(Long vehicleId) {
 
+        if (ApiContext.get().getUserRole() != UserRole.COMPANY_ADMIN) {
+            throw ApiException.accessDenied();
+        }
+
         Vehicle vehicle = vehicleService.get(vehicleId, ApiContext.get().getCompanyId());
 
         if (vehicle == null) {
@@ -256,12 +274,10 @@ public class VehicleApiController implements VehicleApi {
         VehicleAuthority currentUserAuth = vAuthService
                 .find(ApiContext.get().getUserId(), vehicle);
 
-        if (currentUserAuth == null) {
-            throw ApiException.notFound("Not found : " + vehicleId);
-        }
+        GroupAuthority currentGroupAuth = groupAuthService.get(ApiContext.get().getUserId(), vehicle.getGroup());
 
-        if (currentUserAuth.getRole() != UserRole.COMPANY_ADMIN) {
-            throw ApiException.accessDenied();
+        if (currentUserAuth == null && currentGroupAuth == null) {
+            throw ApiException.notFound("Not found : " + vehicleId);
         }
 
         vehicleService.delete(vehicle);

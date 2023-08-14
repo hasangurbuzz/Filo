@@ -10,6 +10,7 @@ import com.hasangurbuz.filo.domain.*;
 import com.hasangurbuz.filo.service.GroupAuthorityService;
 import com.hasangurbuz.filo.service.GroupService;
 import com.hasangurbuz.filo.service.VehicleAuthorityService;
+import com.hasangurbuz.filo.service.VehicleService;
 import org.apache.commons.lang3.StringUtils;
 import org.openapitools.api.GroupApi;
 import org.openapitools.model.GroupCreateRequestDTO;
@@ -37,6 +38,9 @@ public class GroupApiController implements GroupApi {
 
     @Autowired
     private VehicleAuthorityService vAuthService;
+
+    @Autowired
+    private VehicleService vehicleService;
 
     @Autowired
     private GroupMapper groupMapper;
@@ -122,16 +126,6 @@ public class GroupApiController implements GroupApi {
             assignedGroups.add(g.getGroup());
         }
 
-        for (Group g : assignedGroups) {
-            List<VehicleAuthority> vehicleAuths = vAuthService.searchByGroup(ApiContext.get().getUserId(), g);
-            List<Vehicle> vehicles = vAuthMapper.toVehicleList(vehicleAuths);
-            for (Vehicle v : assignedVehicles) {
-                if (!assignedVehicles.contains(v)) {
-                    assignedVehicles.add(v);
-                }
-            }
-        }
-
         Map<Long, List<Vehicle>> vehiclesByGroup = new HashMap<>();
         Map<Long, Group> visibleGroups = new HashMap<>();
 
@@ -161,8 +155,7 @@ public class GroupApiController implements GroupApi {
                 temp = temp.getParentGroup();
             }
 
-            List<VehicleAuthority> vAuthorities = vAuthService.searchByGroup(ApiContext.get().getUserId(), assignedGroup);
-            List<Vehicle> assignedGroupVehicles = vAuthMapper.toVehicleList(vAuthorities);
+            List<Vehicle> assignedGroupVehicles = vehicleService.findByGroup(assignedGroup);
 
             if (assignedGroupVehicles == null) {
                 List<Vehicle> vehicles = vehiclesByGroup.get(assignedGroup.getId());

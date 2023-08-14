@@ -1,5 +1,6 @@
 package com.hasangurbuz.filo.service.impl;
 
+import com.hasangurbuz.filo.domain.Group;
 import com.hasangurbuz.filo.domain.QVehicle;
 import com.hasangurbuz.filo.domain.Vehicle;
 import com.hasangurbuz.filo.repository.VehicleRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Service
 public class VehicleServiceImpl implements VehicleService {
@@ -50,6 +52,23 @@ public class VehicleServiceImpl implements VehicleService {
                 ).fetchOne();
 
         return result;
+    }
+
+    @Override
+    public List<Vehicle> findByGroup(Group group) {
+        QVehicle vehicle = QVehicle.vehicle;
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+
+        List<Vehicle> results = query.selectFrom(vehicle)
+                .where(
+                        vehicle.companyId.eq(group.getCompanyId())
+                                .and(vehicle.group.companyId.eq(group.getCompanyId()))
+                                .and(vehicle.isDeleted.isFalse())
+                                .and(vehicle.group.id.eq(group.getId()))
+
+                ).fetch();
+
+        return results;
     }
 
     @Override
