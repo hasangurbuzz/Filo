@@ -29,7 +29,7 @@ public class ApiExceptionHandler {
             ErrorDTO error = new ErrorDTO();
             error.setCode(ApiExceptionCode.INVALID_INPUT);
             error.setMessage(result.getFieldError().getField() + " : " + result.getFieldError().getDefaultMessage());
-            return ResponseEntity.badRequest().body(error);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
         return null;
     }
