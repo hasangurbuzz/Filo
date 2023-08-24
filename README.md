@@ -16,7 +16,7 @@ structure allowing multiple companies to use the same system.
 - JPA
 - Flyway
 - OpenAPI
-- Querydsl
+- QueryDSL
 - Spring Boot Actuator
 
 ## Application Components
