@@ -28,14 +28,6 @@ Each class includes an 'isDeleted' field. When a deletion process occurs, this f
 
 These classes could also provide several benefits in the future. They offer adaptability, allowing easy expansion of data to meet evolving business needs. This data could be leveraged for insightful analytics, trend tracking, and supporting data-driven decisions. The classes might facilitate seamless integration across applications, enabling efficient data sharing. They could also automate processes like maintenance scheduling based on vehicle age.
 
-| Class                     | Purpose and Description                                  |
-|---------------------------|---------------------------------------------------------|
-| `Vehicle`                 | Represents a database table for storing vehicle information. Offers the schema for storing vehicle data. |
-| `VehicleAuthority`        | Represents a database table for storing vehicle access permissions. User-based access to vehicles is controlled through these permissions. |
-| `Group`                   | Represents a database table for managing groups. Offers the schema for storing group data. |
-| `GroupAuthority`          | Represents a database table for storing group permissions. User-based access to groups is controlled through these permissions. |
-| `UserRole`                | Represents a role type assigned to users when granting vehicle permissions. This role type helps determine the level of access a user has to specific vehicles. |
-
 #### Vehicle
 
 The `Vehicle` class serves as an entity in the database schema, defining the structure for storing vehicle-related data. This class is mapped to a corresponding table and offers the schema for storing vehicle records.
@@ -62,14 +54,6 @@ Service classes encapsulate the business logic and operations related to specifi
 
 In order for a user to carry out operations on groups or vehicles, they must have the appropriate authorization for the particular group or vehicle. These authorizations are verified by the AuthorityServices. This ensures a uniform approach to authorization control, which can be extended to new domain classes in the future with minimal adjustments, maintaining consistency through the same methodology.
 
-| Class                     | Purpose and Description                                  |
-|---------------------------|---------------------------------------------------------|
-| `VehicleService`          | Manages vehicle creation, update, deletion, and checks whether a vehicle exists. |
-| `VehicleAuthorityService` | Manages user authorization to view specific vehicles, including granting and revoking permissions, and finding authorized vehicles. |
-| `GroupService`            | Manages group creation and checks whether a group exists. |
-| `GroupAuthorityService`   | Manages user authorization to view specific groups and finding authorized groups. |
-| `PagedResults`            | Provides a generic class for handling paged results using the Pageable interface. |
-
 #### VehicleService
 
 The `VehicleService` class is responsible for handling the create, read, update, and delete operations involving Vehicle objects.
@@ -93,15 +77,6 @@ The `PagedResults` class is a generic class utilized for storing paginated query
 ### API Classes
 
 API classes responsible for handling client requests and interactions.
-
-| Class                         | Purpose and Description                                  |
-|-------------------------------|---------------------------------------------------------|
-| `ApiConstant`                 | Holds constants used in the API layer. |
-| `ApiContext`                  | Stores user information set by the `SecurityInterceptor` during each request's lifecycle, ensuring accessibility and consistency throughout the request's processing. |
-| `ApiException`                | Captures errors that occur during the request lifecycle, providing a mechanism for handling and managing exceptions. |
-| `ApiExceptionCode`            | Contains constants representing error codes for exceptions that occur within the request lifecycle. |
-| `ApiExceptionHandler`         | Captures and handles `ApiException` errors, providing meaningful error messages and codes to the user during the request lifecycle. |
-| `ApiValidator`                | Validates vehicle information that requires validation within the API, ensuring adherence to specified rules and constraints. |
 
 #### ApiConstant
 
@@ -131,12 +106,6 @@ The `ApiValidator` class is responsible for validating vehicle information that 
 
 The following controller classes manage the API endpoints, validating requests, interacting with the service layer, and returning appropriate responses to the client.
 
-| Class                         | Purpose and Description                                  |
-|-------------------------------|---------------------------------------------------------|
-| `VehicleApiController`        | Handles requests related to vehicles. Validates requests, calls necessary methods from the service layer for CRUD operations, and returns the appropriate response to the client. |
-| `VehicleUsersApiController`   | Manages requests related to vehicle users. Validates requests, calls necessary methods from the service layer, and returns the appropriate response to the client. |
-| `GroupApiController`          | Deals with requests related to groups. Validates requests, calls necessary methods from the service layer, and returns the appropriate response to the client. |
-
 #### VehicleApiController
 
 The `VehicleApiController` class handles requests related to vehicles from the client. It is responsible for validating requests, calling necessary methods from the service layer to perform CRUD operations on vehicles, and returning the appropriate response to the client.
@@ -148,28 +117,6 @@ The `VehicleUsersApiController` class manages requests related to vehicle users 
 #### GroupApiController
 
 The `GroupApiController` class deals with requests related to groups from the client. It validates incoming requests, communicates with the service layer to execute actions related to groups, and provides responses to the client based on the performed operations.
-
-### Config
-
-This section includes the configuration classes used within the project.
-
-| Class            | Purpose and Description                                                                      |
-|------------------|----------------------------------------------------------------------------------------------|
-| `FlywayConfig`   | Manages versioned database schema creation and control using Flyway tool.                  |
-| `WebConfig`      | Integrates custom interceptor classes into the Spring application to intercept HTTP requests.|
-| `LoggerConfig`   | Handles configuration settings for logging within the application.                          |
-
-#### FlywayConfig
-
-The `FlywayConfig` class is responsible for managing versioned database schema creation and control using the Flyway tool. The project utilizes Flyway to ensure that required database schemas are versioned and maintained. This class handles the configuration of Flyway within the application.
-
-#### WebConfig
-
-The `WebConfig` class is responsible for integrating custom interceptor classes into the Spring application. Interceptors are used to intercept and process incoming HTTP requests before they reach the controller. This class allows the application to register and use custom interceptors effectively.
-
-#### LoggerConfig
-
-The `LoggerConfig` class is responsible for configuring logging settings within the application. Logging is crucial for tracking application behavior and diagnosing issues. This class handles the configuration related to logging, ensuring that log messages are generated and managed appropriately.
 
 ### Security
 
