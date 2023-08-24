@@ -118,7 +118,7 @@ The `VehicleUsersApiController` class manages requests related to vehicle users 
 
 The `GroupApiController` class deals with requests related to groups from the client. It validates incoming requests, communicates with the service layer to execute actions related to groups, and provides responses to the client based on the performed operations.
 
-### Security
+### Security Classes
 
 | Class                | Purpose and Description                                                                   |
 |----------------------|-------------------------------------------------------------------------------------------|
