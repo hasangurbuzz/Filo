@@ -3,10 +3,11 @@
 This project provides a backend microservice to manage vehicle records and authorization. It supports a Multi-tenancy
 structure allowing multiple companies to use the same system.
 
-## Features
+## Main Features
 
-- Admin role manages vehicle groups: Create, edit, delete.
-- Admin role assigns authorized vehicles to standard users.
+- Users can perform operations on vehicles and groups only they are authorized for.
+- Users with the Admin role can grant vehicle and group permissions to other users.
+- Users with the Admin role can perform CRUD operations on vehicles and groups.
 - Standard users can view vehicles assigned to them.
 
 ## Technologies Used
