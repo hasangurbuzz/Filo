@@ -120,9 +120,7 @@ The `GroupApiController` class deals with requests related to groups from the cl
 
 ### Security Classes
 
-| Class                | Purpose and Description                                                                   |
-|----------------------|-------------------------------------------------------------------------------------------|
-| `SecurityInterceptor`| Validates user information in the "X-User" header of incoming requests and sets it in the `ApiContext` for the request's lifecycle. |
+#### SecurityInterceptor
 
 The `SecurityInterceptor` class is responsible for validating user information present in the "X-User" header of each incoming request. It ensures that the user information is valid and sets it in the `ApiContext` for the duration of the request's lifecycle.
 
