@@ -8,7 +8,7 @@ structure allowing multiple companies to use the same system.
 - Users can perform operations on vehicles and groups only they are authorized for.
 - Users with the Admin role can grant vehicle and group permissions to other users.
 - Users with the Admin role can perform CRUD operations on vehicles and groups.
-- Standard users can view vehicles assigned to them.
+- Standard users can view vehicles or groups assigned to them.
 
 ## Technologies Used
 
