@@ -20,17 +20,4 @@ public class ApiExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorDTO> handleFields(MethodArgumentNotValidException ex) {
-        BindingResult result = ex.getBindingResult();
-
-        if (result.hasErrors()) {
-            ErrorDTO error = new ErrorDTO();
-            error.setCode(ApiExceptionCode.INVALID_INPUT);
-            error.setMessage(result.getFieldError().getField() + " : " + result.getFieldError().getDefaultMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-        }
-        return null;
-    }
 }

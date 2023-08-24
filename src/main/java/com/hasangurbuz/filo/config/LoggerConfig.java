@@ -12,8 +12,4 @@ public class LoggerConfig {
     public Logger getLogger() {
         return LoggerFactory.getLogger(Logger.class);
     }
-
-    public void e() {
-        this.getLogger().error("");
-    }
 }
